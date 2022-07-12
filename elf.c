@@ -30,9 +30,21 @@
 
 #include <libelf/elf.h>
 
+static elf_err_e elf_load_file_ext(elf_ctx_t *elf_ctx, const char *elf_path_name);
+static elf_err_e elf_unload_ext(elf_ctx_t *elf_ctx);
+static const char* elf_error_to_str_ext(elf_err_e error);
+
+/* Protecting the library method by exporting a wrapper method */
+
 elf_err_e elf_load_file(elf_ctx_t *elf_ctx, const char *elf_path_name)
 {
     assert(elf_ctx != NULL);
+
+    return elf_load_file_ext(elf_ctx, elf_path_name);
+}
+
+static elf_err_e elf_load_file_ext(elf_ctx_t *elf_ctx, const char *elf_path_name)
+{
 
     memset(elf_ctx, 0, sizeof(elf_ctx_t));
 
@@ -59,6 +71,11 @@ elf_err_e elf_unload(elf_ctx_t *elf_ctx)
 {
     assert(elf_ctx);
 
+    return elf_unload_ext(elf_ctx);
+}
+
+static elf_err_e elf_unload_ext(elf_ctx_t *elf_ctx)
+{
     FILE *local_file_ptr = elf_ctx->elf_file_ptr;
 
     if (local_file_ptr == NULL)
@@ -74,3 +91,20 @@ elf_err_e elf_unload(elf_ctx_t *elf_ctx)
 
 }
 
+const char* elf_error_to_str(elf_err_e error)
+{
+    return elf_error_to_str_ext(error);
+}
+
+static const char* elf_error_to_str_ext(elf_err_e error)
+{
+    if (error >= NULL_VALUE)
+        /* The error message is longer than the error list */
+        return "(null)";
+
+    const char *error_message = elf_error_str_list[error];
+
+    assert(error_message);
+
+    return error_message;
+}

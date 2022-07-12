@@ -16,27 +16,16 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LIBELF_ELF_H
-#define LIBELF_ELF_H 
+#ifndef LIBELF_ELFERROR_H
+#define LIBELF_ELFERROR_H
 
-#include <stdio.h>
-
-#include "elf-error.h"
-
-typedef struct
+typedef enum elf_err_e
 {
-    /* ELF filename (Virtual position in the file system) */
-    const char *elf_name;
-    /* ELF FILE pointer (A pointer for the current ELF archive) */
-    FILE *elf_file_ptr;
+    ELF_OK, LOAD_FILE_ERROR, UNLOAD_FILE_ERROR, NULL_VALUE
 
-    const char *error_record;
+} elf_err_e;
 
-} elf_ctx_t;
-
-elf_err_e elf_load_file(elf_ctx_t *elf_ctx, const char *elf_path_name);
-
-elf_err_e elf_unload(elf_ctx_t *elf_ctx);
+extern const char *const elf_error_str_list[];
 
 #endif
 

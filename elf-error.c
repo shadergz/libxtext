@@ -16,27 +16,11 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LIBELF_ELF_H
-#define LIBELF_ELF_H 
+#include <libelf/elf-error.h>
 
-#include <stdio.h>
-
-#include "elf-error.h"
-
-typedef struct
-{
-    /* ELF filename (Virtual position in the file system) */
-    const char *elf_name;
-    /* ELF FILE pointer (A pointer for the current ELF archive) */
-    FILE *elf_file_ptr;
-
-    const char *error_record;
-
-} elf_ctx_t;
-
-elf_err_e elf_load_file(elf_ctx_t *elf_ctx, const char *elf_path_name);
-
-elf_err_e elf_unload(elf_ctx_t *elf_ctx);
-
-#endif
-
+const char *const elf_error_str_list[] = {
+    "Everything is ok",
+    "Can't load the file",
+    "Can't unload, there's nothing to unload",
+    NULL    
+};
