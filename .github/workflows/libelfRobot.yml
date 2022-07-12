@@ -21,33 +21,6 @@ jobs:
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-  
-  deploy-dev:
-    runs-on: ubuntu-latest
-    environment:
-      name: dev
-    needs: build
-    steps:
-      - name: Waiting for reviewers
-        run: echo Waiting for the development workflow reviewers...
-  
-  deploy-hmg:
-    runs-on: ubuntu-latest
-    environment:
-      name: hmg
-    needs: deploy-dev
-    steps:
-      - name: Waiting for homologation stage
-        run: echo Waiting for the homologation workflow reviewers...
-        
-  deploy-prod:
-    runs-on: ubuntu-latest
-    environment:
-      name: prod
-    needs: deploy-hmg
-    steps:
-      - name: Waiting for begin in production
-        run: echo Waiting for the production workflow reviewers...
-  
+
 
       
