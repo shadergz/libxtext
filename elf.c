@@ -28,7 +28,14 @@
 
 #endif
 
-#include <libelf/elf.h>
+/*
+    If there's a already installed version of the library, 
+    continue to search in the include directory of this project.
+*/
+
+#include "libelf/elf.h"
+
+#include "elf-error.h"
 
 static elf_err_e elf_load_file_ext(elf_ctx_t *elf_ctx, const char *elf_path_name);
 static elf_err_e elf_unload_ext(elf_ctx_t *elf_ctx);

@@ -16,16 +16,13 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LIBELF_ELF_H
-#define LIBELF_ELF_H
+#ifndef LIBELF_ELFERROR_H
+#define LIBELF_ELFERROR_H
 
-#include "elf-types.h"
+#include "libelf/elf-types.h"
 
-elf_err_e elf_load_file(elf_ctx_t *elf_ctx, const char *elf_path_name);
-
-elf_err_e elf_unload(elf_ctx_t *elf_ctx);
-
-const char* elf_error_to_str(elf_err_e error);
+extern __attribute__((visibility("hidden"))) 
+    const char *const elf_error_str_list[];
 
 #endif
 

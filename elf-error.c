@@ -16,7 +16,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <libelf/elf-error.h>
+#include "elf-error.h"
 
 const char *const elf_error_str_list[] = {
     "Everything is ok",
