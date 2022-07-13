@@ -18,9 +18,12 @@
 
 #include "elf-error.h"
 
-const char *const elf_error_str_list[] = {
-    "Everything is ok",
-    "Can't load the file",
-    "Can't unload, there's nothing to unload",
-    NULL    
+const char * const elf_error_str_list[] = {
+    "everything is ok",
+    "can't load the file",
+    "can't unload, there's nothing to unload",
+    "can't read a chunk of memory from the file",
+    "this function isn't available at this moment",
+    "the file isn't a ELF file",
+    NULL
 };

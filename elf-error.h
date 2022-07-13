@@ -21,8 +21,7 @@
 
 #include "libelf/elf-types.h"
 
-extern __attribute__((visibility("hidden"))) 
-    const char *const elf_error_str_list[];
+extern __attribute__((visibility("hidden"))) const char *const elf_error_str_list[];
 
 #endif
 

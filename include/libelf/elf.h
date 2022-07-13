@@ -25,7 +25,19 @@ elf_err_e elf_load_file(elf_ctx_t *elf_ctx, const char *elf_path_name);
 
 elf_err_e elf_unload(elf_ctx_t *elf_ctx);
 
-const char* elf_error_to_str(elf_err_e error);
+/* ELF */
+elf_err_e elf_parser(elf_ctx_t *elf_ctx);
+
+/* Checking ELF API functions */
+bool elf_is_elf(elf_ctx_t *elf_ctx);
+
+/* Error API handler functions */
+
+const char* elf_error_to_str(const elf_err_e error);
+
+elf_err_e elf_get_error(elf_ctx_t *elf_ctx);
+
+char* elf_error_format(char *buffer, size_t buffer_size, elf_ctx_t *elf_ctx);
 
 #endif
 
