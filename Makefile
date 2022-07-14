@@ -4,7 +4,7 @@ libinc = include
 
 libname = libelf
 
-lib_objs = elf.o elf-error.o
+lib_objs = elf.o elf-error.o elf-string-data.o
 
 libver = 0.1
 

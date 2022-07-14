@@ -66,18 +66,47 @@ typedef struct
 } elf_header64_t;
 
 
-typedef enum elf_err_e
+typedef enum
 {
     ELF_E_OK, 
     ELF_E_LOAD_FILE, 
     ELF_E_UNLOAD_FILE, 
     ELF_E_CANT_READ,
-    ELF_E_INVALID_FUNC,
     ELF_E_INVALID_ELF,
-    NULL_VALUE
+    ELF_E_INVALID_ARCH,
+    ELF_E_UNKNOW_CPU_ENCODE,
+    ELF_E_INVALID_VERSION,
+    ELF_E_INVALID_TYPE_NAME,
+    ELF_E_ERROR_CODE,
+    ELF_E_NULL_VALUE
 } elf_err_e;
 
-typedef struct elf_ctx
+typedef enum
+{
+    EA_INVALID,
+    EA_32BITS,
+    EA_64BITS,
+    EA_NULL_VALUE
+} elf_arch_e;
+
+typedef enum
+{
+    ECE_UNKNOW,
+    /* little-endian */
+    ECE_LSB_2DATA,
+    /* big-endian */
+    ECE_MSB_2DATA,
+    ECE_NULL_VALUE
+} elf_cpu_encode_e;
+
+typedef enum
+{
+    EV_INVALID,
+    EV_CURRENT,
+    EV_NULL_VALUE
+} elf_version_e;
+
+typedef struct
 {
     /* ELF filename (Virtual position in the file system) */
     const char *elf_name;
@@ -91,19 +120,16 @@ typedef struct elf_ctx
      * After decide what version the current ELF is, the correct parser 
      * will be performed. 
     */
-    elf_header64_t elf_buffer_header;
+    elf_header64_t elf;
 
     /* Avoid multiples casting type */
     elf_header64_t *elf_header64;
     elf_header32_t *elf_header32;
 
-    elf_err_e    (*FUNC_elf_unload)(struct elf_ctx *elf_ctx);
-    elf_err_e    (*FUNC_elf_parser)(struct elf_ctx *elf_ctx);
-    elf_err_e    (*FUNC_elf_get_error)(struct elf_ctx *elf_ctx);
-    char*        (*FUNC_error_format)(char *buffer, size_t buffer_size, struct elf_ctx *elf_ctx);
-
-    bool         (*FUNC_elf_is_elf)(struct elf_ctx *elf_ctx);
-
+    /* ELF architecture type */
+    elf_arch_e arch_type;
+    elf_cpu_encode_e cpu_encode;
+    elf_version_e version;
 
     elf_err_e error_id;
 

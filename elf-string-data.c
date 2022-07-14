@@ -16,19 +16,30 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "elf-error.h"
 
-const char * const elf_error_str_list[] = {
-    "everything is ok",
-    "can't load the file",
-    "can't unload, there's nothing to unload",
-    "can't read a chunk of memory from the file",
-    "the file isn't a ELF file",
-    "invalid elf architecture",
-    "unknow CPU encode (is LSB or MSB ?!)",
-    "invalid ELF version",
-    "invalid type name",
-    "invalid error code",
+#include <stddef.h>
+
+#include "elf-string-data.h"
+
+const char *type_name_info[] = {"ARCH", "ENCODE", "VERSION", NULL};
+
+const char * const elf_arch_str_list[] = {
+    "Invalid class",
+    "32bit arch",
+    "64bit arch",
+    NULL
+};
+
+const char * const elf_encode_str_list[] = {
+    "Unknow data format",
+    "Two's complement, little-endian",
+    "Two's complement, big-endian",
+    NULL
+};
+
+const char * const elf_version_str_list[] = {
+    "Invalid version",
+    "Current version",
     NULL
 };
 

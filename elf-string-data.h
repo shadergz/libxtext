@@ -16,19 +16,17 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "elf-error.h"
+#ifndef LIBELF_ELFSL_H
+#define LIBELF_ELFSL_H
 
-const char * const elf_error_str_list[] = {
-    "everything is ok",
-    "can't load the file",
-    "can't unload, there's nothing to unload",
-    "can't read a chunk of memory from the file",
-    "the file isn't a ELF file",
-    "invalid elf architecture",
-    "unknow CPU encode (is LSB or MSB ?!)",
-    "invalid ELF version",
-    "invalid type name",
-    "invalid error code",
-    NULL
-};
+extern __attribute__((visibility("hidden"))) const char *type_name_info[];
+
+extern __attribute__((visibility("hidden"))) const char * const elf_arch_str_list[];
+
+extern __attribute__((visibility("hidden"))) const char * const elf_encode_str_list[];
+
+extern __attribute__((visibility("hidden"))) const char * const elf_version_str_list[];
+
+#endif
+
 

@@ -6,6 +6,7 @@ project(elf VERSION 0.1)
 set(libelf_SRC
     elf.c
     elf-error.c
+    elf-string-data.c
 )
 
 add_library(${PROJECT_NAME} SHARED ${libelf_SRC})
