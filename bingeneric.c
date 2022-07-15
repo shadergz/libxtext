@@ -133,9 +133,9 @@ static size_t check_and_map(bin_ctx_t *bin)
     
 	const uintptr_t map_end = (uintptr_t)map_start + map_size;
 
-    bin->mapped_area.map_start = map_start;
-    bin->mapped_area.map_end = map_end;
-    bin->mapped_area.map_size = map_size;
+    bin->map_start = map_start;
+    bin->map_end = map_end;
+    bin->map_size = map_size;
 
     return map_size;
 #endif
@@ -149,9 +149,9 @@ static size_t check_and_unmap(bin_ctx_t *bin)
     void *mapstart ;
     size_t mapsize;
 
-    assert((mapstart = bin->mapped_area.map_start) != NULL);
-    assert(bin->mapped_area.map_end != 0);
-    assert((mapsize = bin->mapped_area.map_size) != 0);
+    assert((mapstart = bin->map_start) != NULL);
+    assert(bin->map_end != 0);
+    assert((mapsize = bin->map_size) != 0);
 
     if (munmap(mapstart, mapsize) != 0)
         bin->error_status = BIN_E_MUNMAP_FAILED;

@@ -60,17 +60,12 @@ typedef struct
     /* A internal error status value (allow the getting method) */
     bin_err_e error_status;
 
-    union {
-        struct {
 #if defined(__unix__)
-            unsigned char *map_start;
-            uintptr_t map_end;
-            size_t map_size;
+    unsigned char *map_start;
+    uintptr_t map_end;
+    size_t map_size;
 #endif
-        } mapped_area;
-
-        bool using_mapped;
-    };
+    bool using_mapped;
 
 } bin_ctx_t;
 
