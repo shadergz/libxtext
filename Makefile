@@ -15,7 +15,7 @@ lib_objs = src/generic.o\
 	src/binparser.o\
 	src/binman.o
 
-libver = 0.1
+libver = 0.0.2
 
 override CFLAGS=-Wall -Werror -pedantic -std=gnu11 -I$(libinc)
 

@@ -65,6 +65,8 @@ size_t check_and_map(bin_ctx_t *bin)
     bin->map_end = map_end;
     bin->map_size = map_size;
 
+    madvise(map_start, map_size, MADV_SEQUENTIAL);
+
     return map_size;
 #endif
 }
