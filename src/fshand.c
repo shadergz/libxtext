@@ -13,11 +13,11 @@ bool fs_can_open(const char *pathname)
 }
 
 #if defined(__unix__)
-size_t fs_get_size(int fd)
+size_t fs_get_size(int32_t fd)
 {    
     struct stat fd_stat;
 
-    const int stat_ret = fstat(fd, &fd_stat);
+    const int32_t stat_ret = fstat(fd, &fd_stat);
     if (stat_ret == -1)
         return 0;
     

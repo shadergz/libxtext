@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-typedef int fd_t;
-typedef int flags_t;
+typedef int32_t fd_t;
+typedef int32_t flags_t;
 
 typedef enum
 {
@@ -69,7 +69,7 @@ typedef struct
 #if _POSIX_C_SOURCE >= 200809L
     fd_t dir_fd;
 #endif
-    int internal_errno;
+    int32_t internal_errno;
     flags_t fd_flags;
 #endif
 

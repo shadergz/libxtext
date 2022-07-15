@@ -49,8 +49,8 @@ size_t check_and_map(bin_ctx_t *bin)
     /* Mapping the file in memory */
 
 #if defined(__unix__)
-    const int map_prot = PROT_READ | PROT_WRITE;
-    const int map_flags = /* MAP_SHARED */ MAP_PRIVATE;
+    const int32_t map_prot = PROT_READ | PROT_WRITE;
+    const int32_t map_flags = /* MAP_SHARED */ MAP_PRIVATE;
     const size_t map_size = bin_file_size;
 
     unsigned char *map_start = mmap(NULL, map_size, map_prot, map_flags, bin->fd, 0);

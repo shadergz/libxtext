@@ -4,19 +4,19 @@ cmake_minimum_required(VERSION 3.16)
 project(libbin VERSION 0.0.2)
 
 set(LIBBIN_SRC
-    generic.c
-    binio.c
-    binman.c
-    binparser.c
-    
-    elfhandler.c
+    src/generic.c
+    src/binio.c
+    src/binman.c
+    src/binparser.c
 
-    error.c
-    unload.c
+    src/elfhandler.c
 
-    fshand.c
-    identify.c
-    memhand.c
+    src/error.c
+    src/unload.c
+
+    src/fshand.c
+    src/identify.c
+    src/memhand.c
 )
 
 add_library(${PROJECT_NAME} SHARED ${LIBBIN_SRC})

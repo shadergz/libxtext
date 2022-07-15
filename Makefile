@@ -4,7 +4,16 @@ libinc = include
 
 libname = libbin
 
-lib_objs = generic.o binio.o error.o memhand.o unload.o identify.o elfhandler.o fshand.o binparser.o binman.o
+lib_objs = src/generic.o\
+	src/binio.o\
+	src/error.o\
+	src/memhand.o\
+	src/unload.o\
+	src/identify.o\
+	src/elfhandler.o\
+	src/fshand.o\
+	src/binparser.o\
+	src/binman.o
 
 libver = 0.1
 
