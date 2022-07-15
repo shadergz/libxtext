@@ -4,7 +4,7 @@ libinc = include
 
 libname = libbin
 
-lib_objs = bingeneric.o
+lib_objs = generic.o binio.o error.o memhand.o unload.o identify.o elfhandler.o fshand.o binparser.o binman.o
 
 libver = 0.1
 

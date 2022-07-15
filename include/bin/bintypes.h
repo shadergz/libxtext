@@ -2,6 +2,9 @@
 #define LIBBIN_BINTYPES_H
 
 #include <stdbool.h>
+
+#include <stddef.h>
+
 #include <stdint.h>
 
 typedef int fd_t;
@@ -36,10 +39,25 @@ typedef enum
     BIN_E_MUNMAP_FAILED,
 
 #endif
+    /* A recently try to read a chunk of memory has been failed */
+    BIN_E_CANT_READ,
+
+    /* A invalid file has been passed */
+    BIN_E_INVALID_FILE,
 
     BIN_E_FINAL_NULL_VALUE
 
 } bin_err_e;
+
+typedef enum
+{
+    // Uknow executable file
+    BT_UNKNOW = 0,
+    // Portable executable
+    BT_PE_FILE,
+    // Executable and Linkable Format
+    BT_ELF_FILE
+} bin_type_e;
 
 typedef struct
 {
@@ -66,6 +84,9 @@ typedef struct
     size_t map_size;
 #endif
     bool using_mapped;
+
+    /* Executable type (used for parser another structures) */
+    bin_type_e binary_type;
 
 } bin_ctx_t;
 
