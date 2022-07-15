@@ -1,15 +1,13 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(elf VERSION 0.1)
+project(libbin VERSION 0.0.2)
 
-set(libelf_SRC
-    elf.c
-    elf-error.c
-    elf-string-data.c
+set(LIBBIN_SRC
+    bingeneric.c
 )
 
-add_library(${PROJECT_NAME} SHARED ${libelf_SRC})
+add_library(${PROJECT_NAME} SHARED ${LIBBIN_SRC})
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
@@ -23,7 +21,7 @@ if (UNIX)
     install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/libelf
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/bin
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*h"
     )

@@ -2,9 +2,9 @@ prefix = /usr/local
 
 libinc = include
 
-libname = libelf
+libname = libbin
 
-lib_objs = elf.o elf-error.o elf-string-data.o
+lib_objs = bingeneric.o
 
 libver = 0.1
 
@@ -33,7 +33,7 @@ install:
 		mkdir $(prefix)/include/$(libname); \
 	fi
 	
-	install -m 644 $(libinc)/libelf/* $(prefix)/include/$(libname)
+	install -m 644 $(libinc)/libbin/* $(prefix)/include/$(libname)
 
 uninstall:
 	rm -f $(prefix)/lib/$(libname)*

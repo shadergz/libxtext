@@ -1,4 +1,4 @@
-name: libelfRobot
+name: libbinRobot
 
 on:
   push:

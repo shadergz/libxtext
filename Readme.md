@@ -1,6 +1,6 @@
-# libelf
+# libbin
 
-A portable C library for handler ELF files based on libpe structure
+A portable C library for handler executable files based on libpe structure
 
 ## Supported platforms
 
@@ -23,14 +23,14 @@ Just type in your shell:
 
 # With CMake as build system
 
-libelf> mkdir build
-libelf> cd build
+libbin> mkdir build
+libbin> cd build
 build> cmake ..
 build> make
 
 # With Makefile as builder
 
-libelf> make
+libbin> make
 ~~~
 
 ### How to install
