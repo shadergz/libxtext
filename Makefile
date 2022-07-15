@@ -17,14 +17,14 @@ lib_objs = src/generic.o\
 
 libver = 0.0.2
 
-override CFLAGS=-Wall -Werror -pedantic -std=gnu11 -I$(libinc)
+override CFLAGS=-fPIC -Wall -Werror -pedantic -std=gnu11 -g -I$(libinc)
 
 libobject = $(libname).$(libver).so
 
 all: $(libobject)
 
 $(libobject): $(lib_objs)
-	$(CC) $(CFLAGS) -fPIC -shared -o $@ $^
+	$(CC) $(CFLAGS) -shared -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -38,15 +38,15 @@ install:
 		mkdir $(prefix)/include; \
 	fi
 
-	if [ ! -d $(prefix)/include/$(libname) ]; then \
-		mkdir $(prefix)/include/$(libname); \
+	if [ ! -d $(prefix)/include/bin ]; then \
+		mkdir $(prefix)/include/bin; \
 	fi
 	
-	install -m 644 $(libinc)/libbin/* $(prefix)/include/$(libname)
+	install -m 644 $(libinc)/bin/* $(prefix)/include/bin
 
 uninstall:
 	rm -f $(prefix)/lib/$(libname)*
-	rm -rf $(prefix)/include/$(libname)*
+	rm -rf $(prefix)/include/bin*
 
 clean:
 	rm -f $(lib_objs)\

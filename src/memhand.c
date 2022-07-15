@@ -37,6 +37,10 @@ size_t check_and_unmap(bin_ctx_t *bin)
 size_t check_and_map(bin_ctx_t *bin)
 {
     size_t bin_file_size;
+    size_t map_size;
+    unsigned char *map_start;
+    uintptr_t map_end;
+
     /* Or something like: 1,048,576 * x */
 #define MEBIBYTE(x) x * 1024 * 1024 // 1048576
     if ((bin_file_size = bin->binary_file_size) > MEBIBYTE(124))
@@ -51,15 +55,15 @@ size_t check_and_map(bin_ctx_t *bin)
 #if defined(__unix__)
     const int32_t map_prot = PROT_READ | PROT_WRITE;
     const int32_t map_flags = /* MAP_SHARED */ MAP_PRIVATE;
-    const size_t map_size = bin_file_size;
+    
+    map_size = bin_file_size;
 
-    unsigned char *map_start = mmap(NULL, map_size, map_prot, map_flags, bin->fd, 0);
+    map_start = mmap(NULL, map_size, map_prot, map_flags, bin->fd, 0);
 
     if (map_start == MAP_FAILED)
-    {
         return bin->error_status = BIN_E_MMAP_FAILED;
-    }
-	const uintptr_t map_end = (uintptr_t)map_start + map_size;
+
+    map_end = (uintptr_t)map_start + map_size;
 
     bin->map_start = map_start;
     bin->map_end = map_end;
@@ -67,6 +71,8 @@ size_t check_and_map(bin_ctx_t *bin)
 
     madvise(map_start, map_size, MADV_SEQUENTIAL);
 
-    return map_size;
+    bin->using_mapped = true;
 #endif
+
+    return map_size;
 }

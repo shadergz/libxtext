@@ -14,8 +14,6 @@
 size_t read_binary(void *dest, uintptr_t offset, size_t size, bin_ctx_t *bin)
 {
 #if defined(__unix__)
-    //off_t offset_local = 0;
-
     if (bin->using_mapped)
     {
         if (((uintptr_t)bin->map_start + offset + size) > bin->map_end)

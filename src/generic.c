@@ -26,6 +26,8 @@
 static const char*      bin_get_filename_ext(const bin_ctx_t *bin);
 static const bin_err_e  bin_get_last_error_ext(const bin_ctx_t *bin);
 static size_t           bin_get_binary_size_ext(const bin_ctx_t *bin);
+static bin_type_e       bin_get_binary_type_ext(const bin_ctx_t *bin);
+static const char*      bin_binary_type_to_str_ext(const bin_type_e bin_type);
 
 bin_err_e bin_load_file(const char *pathname, bin_ctx_t *bin)
 {
@@ -83,6 +85,18 @@ size_t bin_get_binary_size(const bin_ctx_t *bin)
     return bin_get_binary_size_ext(bin);
 }
 
+bin_type_e bin_get_binary_type(const bin_ctx_t *bin)
+{
+    assert(bin != NULL);
+
+    return bin_get_binary_type_ext(bin);
+}
+
+const char* bin_binary_type_to_str(const bin_type_e bin_type)
+{
+    return bin_binary_type_to_str_ext(bin_type);
+}
+
 static const char* bin_get_filename_ext(const bin_ctx_t *bin)
 {
     return bin->pathname;
@@ -95,4 +109,36 @@ static size_t bin_get_binary_size_ext(const bin_ctx_t *bin)
 {
     return bin->binary_file_size;
 }
+
+static bin_type_e bin_get_binary_type_ext(const bin_ctx_t *bin)
+{
+    return bin->binary_type;
+}
+
+const char * const binary_type_list[];
+
+static const char* bin_binary_type_to_str_ext(const bin_type_e bin_type)
+{
+    if (bin_type >= BT_FINAL_NULL_VALUE)
+        return binary_type_list[BT_FINAL_NULL_VALUE];
+    
+    return binary_type_list[bin_type];
+}
+
+const char * const binary_type_list[] = {
+
+    // BT_UNKNOW
+    "unknow (not recognized, a.k.a UNK)",
+
+    // BT_PE_FILE
+    "portable executable (PE)",
+
+    // BT_ELF_FILE
+    "executable and linkable format (ELF)",
+
+    // BT_FINAL_NULL_VALUE
+    "(null)",
+    
+    NULL
+};
 

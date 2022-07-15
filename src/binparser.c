@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #if defined(__unix__)
 #include <errno.h>
 #endif
@@ -11,27 +13,29 @@
 
 bin_err_e bin_parser_ext(bin_ctx_t *bin)
 {
-    if (bin->binary_file_size)
-        return BIN_E_ALREDY_PARSED;
+    if (bin->binary_file_size != 0)
+        return bin->error_status = BIN_E_ALREDY_PARSED;
 
     if (bin->error_status != BIN_E_OK) 
-        return bin->error_status;
+        return bin->error_status; 
+
+#if defined(__unix__)
 
     const fd_t fd = bin->fd;
 
-    if (fd > 2)
+    if (fd == -1)
         return bin->error_status = BIN_E_OPEN_FILE;
 
     errno = 0;
 
-#if defined(__unix__)
     const size_t bin_size = fs_get_size(fd);
 
-    if (bin_size == 0) {
+    if (bin_size == 0)
+    {
         if (errno == 0)
-            return BIN_E_IS_EMPTY;
+            return bin->error_status = BIN_E_IS_EMPTY;
         else
-            return BIN_E_FSTAT_FAILED;
+            return bin->error_status = BIN_E_FSTAT_FAILED;
     }
 #endif
 

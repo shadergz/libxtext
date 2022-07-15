@@ -20,6 +20,9 @@ const char* bin_get_filename(const bin_ctx_t *bin);
 const bin_err_e bin_get_last_error(const bin_ctx_t *bin);
 size_t bin_get_binary_size(const bin_ctx_t *bin);
 
+bin_type_e bin_get_binary_type(const bin_ctx_t *bin);
+const char* bin_binary_type_to_str(const bin_type_e bin_type);
+
 /* Error handler functions */
 const char* bin_error_to_str(const bin_err_e error_value);
 

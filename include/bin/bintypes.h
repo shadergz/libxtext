@@ -56,7 +56,9 @@ typedef enum
     // Portable executable
     BT_PE_FILE,
     // Executable and Linkable Format
-    BT_ELF_FILE
+    BT_ELF_FILE,
+
+    BT_FINAL_NULL_VALUE
 } bin_type_e;
 
 typedef struct

@@ -34,8 +34,8 @@ bin_err_e bin_load_file_ext(const char *pathname, bin_ctx_t *bin)
         If there's any file or memory allocated, destroy everything now
         before continue!
     */
-    if (bin_finish_ext(bin) != BIN_E_OK)
-        return bin->error_status;
+
+    memset(bin, 0, sizeof(bin_ctx_t));
     
 #if defined(__unix__)
     bin->fd_flags = 
@@ -44,7 +44,6 @@ bin_err_e bin_load_file_ext(const char *pathname, bin_ctx_t *bin)
 #endif
         /* O_RDWR | O_WRONLY | */ 
         O_RDONLY;
-
 #if _POSIX_C_SOURCE >= 200809L
     fd_t open_dir = bin->dir_fd = open(".", O_DIRECTORY | /* O_PATH */ O_RDONLY);
 
@@ -55,11 +54,14 @@ bin_err_e bin_load_file_ext(const char *pathname, bin_ctx_t *bin)
     }
 
     const fd_t open_fd = bin->fd = openat(bin->dir_fd, pathname, bin->fd_flags, bin->fd_flags);
+    
     close(bin->dir_fd);
 
     bin->dir_fd = open_dir == -1;
+
 #else
     const fd_t open_fd = bin->fd = open(pathname, bin->fd_flags, bin->fd_flags);
+
 #endif
 
     if (open_fd == -1)
@@ -67,6 +69,7 @@ bin_err_e bin_load_file_ext(const char *pathname, bin_ctx_t *bin)
         bin->internal_errno = errno;
         return bin->error_status = BIN_E_OPEN_FILE;
     }
+
 #endif
 
     /* At this moment the file has been opened with success */
