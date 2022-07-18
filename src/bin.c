@@ -15,20 +15,20 @@
 
 #include "bin/bin.h"
 
-static BINERR_t         INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin);
-static BINERR_t         INTERNAL_BinFinish(BinCtx_t *bin);
-static BINERR_t         INTERNAL_BinUnloadFile(BinCtx_t *bin);
-static BINERR_t         INTERNAL_BinParser(BinCtx_t *bin);
+static BinError_t         INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin);
+static BinError_t         INTERNAL_BinFinish(BinCtx_t *bin);
+static BinError_t         INTERNAL_BinUnloadFile(BinCtx_t *bin);
+static BinError_t         INTERNAL_BinParser(BinCtx_t *bin);
 
-static const char*      INTERNAL_BinErrorToStr(const BINERR_t error_value);
+static const char*      INTERNAL_BinErrorToStr(const BinError_t error_value);
 static const char*      INTERNAL_BinGetFilename(const BinCtx_t *bin);
-static const BINERR_t   INTERNAL_BinGetLastError(const BinCtx_t *bin);
+static const BinError_t   INTERNAL_BinGetLastError(const BinCtx_t *bin);
 static size_t           INTERNAL_BinGetBinarySize(const BinCtx_t *bin);
 static BinType_t        INTERNAL_BinGetType(const BinCtx_t *bin);
 static const char*      INTERNAL_BinaryTypeToStr(const BinType_t bin_type);
 
 
-BINERR_t BinLoadFile(const char *pathname, BinCtx_t *bin)
+BinError_t BinLoadFile(const char *pathname, BinCtx_t *bin)
 {
     assert(pathname != NULL);
     assert(bin != NULL);
@@ -36,28 +36,28 @@ BINERR_t BinLoadFile(const char *pathname, BinCtx_t *bin)
     return INTERNAL_BinLoadFile(pathname, bin);
 }
 
-BINERR_t BinFinish(BinCtx_t *bin)
+BinError_t BinFinish(BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinFinish(bin);
 }
 
-BINERR_t BinUnloadFile(BinCtx_t *bin)
+BinError_t BinUnloadFile(BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinUnloadFile(bin);
 }
 
-BINERR_t BinParser(BinCtx_t *bin)
+BinError_t BinParser(BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinParser(bin);
 }
 
-const char* BinErrorToStr(const BINERR_t error_value)
+const char* BinErrorToStr(const BinError_t error_value)
 {
 
     return INTERNAL_BinErrorToStr(error_value);
@@ -70,7 +70,7 @@ const char* BinGetFilename(const BinCtx_t *bin)
     return INTERNAL_BinGetFilename(bin);
 }
 
-const BINERR_t BinGetLastError(const BinCtx_t *bin)
+const BinError_t BinGetLastError(const BinCtx_t *bin)
 {
     assert(bin != NULL);
 
@@ -100,7 +100,7 @@ static const char* INTERNAL_BinGetFilename(const BinCtx_t *bin)
 {
     return bin->pathname;
 }
-static const BINERR_t INTERNAL_BinGetLastError(const BinCtx_t *bin)
+static const BinError_t INTERNAL_BinGetLastError(const BinCtx_t *bin)
 {
     return bin->error_status;
 }
@@ -141,7 +141,7 @@ static const char * const STR_binaryTypesList[] = {
     NULL
 };
 
-static BINERR_t INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin)
+static BinError_t INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin)
 {
 #define SYNC_IO_OPERATIONS 1
     bool canread = false;
@@ -207,7 +207,7 @@ static BINERR_t INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin)
     return bin->error_status = BIN_E_OK;
 }
 
-static BINERR_t INTERNAL_BinUnloadFile(BinCtx_t *bin)
+static BinError_t INTERNAL_BinUnloadFile(BinCtx_t *bin)
 {
 #if defined(__unix__)
     errno = 0;
@@ -298,7 +298,7 @@ static BinType_t CheckMagic(const unsigned char magic_header[4])
 }
 
 
-static BINERR_t INTERNAL_BinParser(BinCtx_t *bin)
+static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
 {
     if (bin->binary_file_size != 0)
         return bin->error_status = BIN_E_ALREDY_PARSED;
@@ -363,7 +363,7 @@ static BINERR_t INTERNAL_BinParser(BinCtx_t *bin)
 
 static const char * const STR_errorsList[];
 
-static const char* INTERNAL_BinErrorToStr(const BINERR_t error_value)
+static const char* INTERNAL_BinErrorToStr(const BinError_t error_value)
 {
     if (error_value >= BIN_E_FINAL_NULL_VALUE)
         return STR_errorsList[BIN_E_FINAL_NULL_VALUE];
@@ -417,7 +417,7 @@ static const char * const STR_errorsList[] = {
     NULL
 };
 
-static BINERR_t INTERNAL_BinFinish(BinCtx_t *bin)
+static BinError_t INTERNAL_BinFinish(BinCtx_t *bin)
 {
     if (INTERNAL_BinUnloadFile(bin) != BIN_E_OK)
         return bin->error_status;
@@ -428,7 +428,7 @@ static BINERR_t INTERNAL_BinFinish(BinCtx_t *bin)
         return bin->error_status;
 
     /* Must be BIN_E_OK */
-    const BINERR_t error_saved = bin->error_status;
+    const BinError_t error_saved = bin->error_status;
 
     memset(bin, 0, sizeof(BinCtx_t));
 

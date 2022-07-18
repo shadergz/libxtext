@@ -47,7 +47,7 @@ typedef enum
 
     BIN_E_FINAL_NULL_VALUE
 
-} BINERR_t;
+} BinError_t;
 
 typedef enum
 {
@@ -78,7 +78,7 @@ typedef struct
     size_t binary_file_size;
 
     /* A internal error status value (allow the getting method) */
-    BINERR_t error_status;
+    BinError_t error_status;
 
 #if defined(__unix__)
     uint8_t *map_start;
