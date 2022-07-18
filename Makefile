@@ -4,18 +4,9 @@ libinc = include
 
 libname = libbin
 
-lib_objs = src/generic.o\
-	src/binio.o\
-	src/error.o\
-	src/memhand.o\
-	src/unload.o\
-	src/identify.o\
-	src/elfhandler.o\
-	src/fshand.o\
-	src/binparser.o\
-	src/binman.o
+lib_objs = src/bin.o
 
-libver = 0.0.2
+libver = 0.0.3
 
 override CFLAGS=-fPIC -Wall -Werror -pedantic -std=gnu11 -g -I$(libinc)
 

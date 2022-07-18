@@ -47,7 +47,7 @@ typedef enum
 
     BIN_E_FINAL_NULL_VALUE
 
-} bin_err_e;
+} BINERR_t;
 
 typedef enum
 {
@@ -59,7 +59,7 @@ typedef enum
     BT_ELF_FILE,
 
     BT_FINAL_NULL_VALUE
-} bin_type_e;
+} BinType_t;
 
 typedef struct
 {
@@ -78,18 +78,17 @@ typedef struct
     size_t binary_file_size;
 
     /* A internal error status value (allow the getting method) */
-    bin_err_e error_status;
+    BINERR_t error_status;
 
 #if defined(__unix__)
-    unsigned char *map_start;
+    uint8_t *map_start;
     uintptr_t map_end;
     size_t map_size;
 #endif
-    bool using_mapped;
 
     /* Executable type (used for parser another structures) */
-    bin_type_e binary_type;
+    BinType_t binary_type;
 
-} bin_ctx_t;
+} BinCtx_t;
 
 #endif
