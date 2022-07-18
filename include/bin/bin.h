@@ -22,7 +22,7 @@ const BinError_t    BinGetLastError(const BinCtx_t *bin);
 size_t              BinGetBinarySize(const BinCtx_t *bin);
 
 BinType_t           BinGetType(const BinCtx_t *bin);
-const char*         BinaryTypeToStr(const BinType_t bin_type);
+const char*         BinBinaryTypeToStr(const BinType_t bin_type);
 
 /* Error handler functions */
 const char*         BinErrorToStr(const BinError_t error_value);

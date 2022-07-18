@@ -25,7 +25,7 @@ static const char*      INTERNAL_BinGetFilename(const BinCtx_t *bin);
 static const BinError_t INTERNAL_BinGetLastError(const BinCtx_t *bin);
 static size_t           INTERNAL_BinGetBinarySize(const BinCtx_t *bin);
 static BinType_t        INTERNAL_BinGetType(const BinCtx_t *bin);
-static const char*      INTERNAL_BinaryTypeToStr(const BinType_t bin_type);
+static const char*      INTERNAL_BinBinaryTypeToStr(const BinType_t bin_type);
 
 
 
@@ -92,9 +92,9 @@ BinType_t BinGetType(const BinCtx_t *bin)
     return INTERNAL_BinGetType(bin);
 }
 
-const char* BinaryTypeToStr(const BinType_t bin_type)
+const char* BinBinaryTypeToStr(const BinType_t bin_type)
 {
-    return INTERNAL_BinaryTypeToStr(bin_type);
+    return INTERNAL_BinBinaryTypeToStr(bin_type);
 }
 
 static const char* INTERNAL_BinGetFilename(const BinCtx_t *bin)
@@ -117,7 +117,7 @@ static BinType_t INTERNAL_BinGetType(const BinCtx_t *bin)
 
 static const char * const STR_binaryTypesList[];
 
-static const char* INTERNAL_BinaryTypeToStr(const BinType_t bin_type)
+static const char* INTERNAL_BinBinaryTypeToStr(const BinType_t bin_type)
 {
     if (bin_type >= BT_FINAL_NULL_VALUE)
         return STR_binaryTypesList[BT_FINAL_NULL_VALUE];
