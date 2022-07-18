@@ -236,7 +236,7 @@ static BinError_t INTERNAL_BinUnloadFile(BinCtx_t *bin)
 
 static size_t UnmapFileMemory(BinCtx_t *bin)
 {    
-    void *mapstart ;
+    void *mapstart;
     size_t mapsize;
 
     assert((mapstart = bin->map_start) != NULL);
@@ -281,6 +281,12 @@ static size_t MapFileMemory(BinCtx_t *bin)
     bin->map_size = map_size;
 
     madvise(map_start, map_size, MADV_SEQUENTIAL);
+
+
+    /* Closing the file descriptor (is not more useful) */
+    close(bin->fd);
+    
+    bin->fd = 0;
     
 #endif
 
@@ -298,6 +304,8 @@ static BinType_t CheckMagic(const unsigned char magic_header[4])
     return BT_UNKNOW;
 }
 
+#define READ_MEMORY(dest, size, offset, area)\
+    memcpy(dest, area + offset, size);
 
 static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
 {
@@ -322,8 +330,6 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
     if (stat_ret == -1)
         return bin->error_status = BIN_E_FSTAT_FAILED;
     
-    return fd_stat.st_size;
-
     const size_t bin_size = fd_stat.st_size;
 
     if (bin_size == 0)
@@ -342,15 +348,9 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
         if (bin->error_status != BIN_E_OK)
             return bin->error_status;
 
-    unsigned char magic_header[4];
+    uint8_t magic_header[4];
 
-#if defined(__unix__)
-    if (read(bin->fd, magic_header, sizeof(magic_header)) != -1)
-    {
-        bin->internal_errno = errno;
-        return bin->error_status = BIN_E_CANT_READ;
-    }
-#endif 
+    READ_MEMORY(magic_header, sizeof(magic_header), 0, bin->map_start); 
 
     const BinType_t bin_type = CheckMagic(magic_header);
 
