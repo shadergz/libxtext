@@ -15,17 +15,18 @@
 
 #include "bin/bin.h"
 
-static BinError_t         INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin);
-static BinError_t         INTERNAL_BinFinish(BinCtx_t *bin);
-static BinError_t         INTERNAL_BinUnloadFile(BinCtx_t *bin);
-static BinError_t         INTERNAL_BinParser(BinCtx_t *bin);
+static BinError_t       INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin);
+static BinError_t       INTERNAL_BinFinish(BinCtx_t *bin);
+static BinError_t       INTERNAL_BinUnloadFile(BinCtx_t *bin);
+static BinError_t       INTERNAL_BinParser(BinCtx_t *bin);
 
 static const char*      INTERNAL_BinErrorToStr(const BinError_t error_value);
 static const char*      INTERNAL_BinGetFilename(const BinCtx_t *bin);
-static const BinError_t   INTERNAL_BinGetLastError(const BinCtx_t *bin);
+static const BinError_t INTERNAL_BinGetLastError(const BinCtx_t *bin);
 static size_t           INTERNAL_BinGetBinarySize(const BinCtx_t *bin);
 static BinType_t        INTERNAL_BinGetType(const BinCtx_t *bin);
 static const char*      INTERNAL_BinaryTypeToStr(const BinType_t bin_type);
+
 
 
 BinError_t BinLoadFile(const char *pathname, BinCtx_t *bin)

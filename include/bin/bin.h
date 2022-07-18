@@ -5,12 +5,12 @@
 
 /* Load and unload functions */
 
-BinError_t            BinLoadFile(const char *pathname, BinCtx_t *bin);
-BinError_t            BinUnloadFile(BinCtx_t *bin);
-BinError_t            BinFinish(BinCtx_t *bin);
+BinError_t          BinLoadFile(const char *pathname, BinCtx_t *bin);
+BinError_t          BinUnloadFile(BinCtx_t *bin);
+BinError_t          BinFinish(BinCtx_t *bin);
 
 /* Binary manipulation functions */
-BinError_t            BinParser(BinCtx_t *bin);
+BinError_t          BinParser(BinCtx_t *bin);
 
 /* Getting functions */
 
@@ -18,7 +18,7 @@ BinError_t            BinParser(BinCtx_t *bin);
  * after call bin_finish function, this pointer will be destroyed.
 */
 const char*         BinGetFilename(const BinCtx_t *bin);
-const BinError_t      BinGetLastError(const BinCtx_t *bin);
+const BinError_t    BinGetLastError(const BinCtx_t *bin);
 size_t              BinGetBinarySize(const BinCtx_t *bin);
 
 BinType_t           BinGetType(const BinCtx_t *bin);
