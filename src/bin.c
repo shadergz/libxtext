@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <errno.h>
 #endif
 
@@ -20,16 +19,15 @@ static BinError_t       INTERNAL_BinFinish(BinCtx_t *bin);
 static BinError_t       INTERNAL_BinUnloadFile(BinCtx_t *bin);
 static BinError_t       INTERNAL_BinParser(BinCtx_t *bin);
 
-static const char*      INTERNAL_BinErrorToStr(const BinError_t error_value);
+static const char*      INTERNAL_BinErrorToStr(BinError_t error_value);
 static const char*      INTERNAL_BinGetFilename(const BinCtx_t *bin);
 static const BinError_t INTERNAL_BinGetLastError(const BinCtx_t *bin);
 static size_t           INTERNAL_BinGetBinarySize(const BinCtx_t *bin);
 static BinType_t        INTERNAL_BinGetType(const BinCtx_t *bin);
-static const char*      INTERNAL_BinBinaryTypeToStr(const BinType_t bin_type);
+static const char*      INTERNAL_BinBinaryTypeToStr(BinType_t bin_type);
 
 
-
-BinError_t BinLoadFile(const char *pathname, BinCtx_t *bin)
+__attribute__((unused)) BinError_t BinLoadFile(const char *pathname, BinCtx_t *bin)
 {
     assert(pathname != NULL);
     assert(bin != NULL);
@@ -37,62 +35,62 @@ BinError_t BinLoadFile(const char *pathname, BinCtx_t *bin)
     return INTERNAL_BinLoadFile(pathname, bin);
 }
 
-BinError_t BinFinish(BinCtx_t *bin)
+__attribute__((unused)) BinError_t BinFinish(BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinFinish(bin);
 }
 
-BinError_t BinUnloadFile(BinCtx_t *bin)
+__attribute__((unused)) BinError_t BinUnloadFile(BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinUnloadFile(bin);
 }
 
-BinError_t BinParser(BinCtx_t *bin)
+__attribute__((unused)) BinError_t BinParser(BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinParser(bin);
 }
 
-const char* BinErrorToStr(const BinError_t error_value)
+__attribute__((unused)) const char* BinErrorToStr(const BinError_t error_value)
 {
 
     return INTERNAL_BinErrorToStr(error_value);
 }
 
-const char* BinGetFilename(const BinCtx_t *bin)
+__attribute__((unused)) const char* BinGetFilename(const BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinGetFilename(bin);
 }
 
-const BinError_t BinGetLastError(const BinCtx_t *bin)
+__attribute__((unused)) const BinError_t BinGetLastError(const BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinGetLastError(bin);
 }
 
-size_t BinGetBinarySize(const BinCtx_t *bin)
+__attribute__((unused)) size_t BinGetBinarySize(const BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinGetBinarySize(bin);
 }
 
-BinType_t BinGetType(const BinCtx_t *bin)
+__attribute__((unused)) BinType_t BinGetType(const BinCtx_t *bin)
 {
     assert(bin != NULL);
 
     return INTERNAL_BinGetType(bin);
 }
 
-const char* BinBinaryTypeToStr(const BinType_t bin_type)
+__attribute__((unused)) const char* BinBinaryTypeToStr(const BinType_t bin_type)
 {
     return INTERNAL_BinBinaryTypeToStr(bin_type);
 }
@@ -127,8 +125,8 @@ static const char* INTERNAL_BinBinaryTypeToStr(const BinType_t bin_type)
 
 static const char * const STR_binaryTypesList[] = {
 
-    // BT_UNKNOW
-    "unknow (not recognized, a.k.a UNK)",
+    // BT_UNKNOWN
+    "unknown (not recognized, a.k.a UNK)",
 
     // BT_PE_FILE
     "portable executable (PE)",
@@ -185,19 +183,16 @@ static BinError_t INTERNAL_BinLoadFile(const char *pathname, BinCtx_t *bin)
     
     close(bin->dir_fd);
 
-    bin->dir_fd = open_dir == -1;
+    bin->dir_fd = -1;
 
 #else
     const fd_t open_fd = bin->fd = open(pathname, bin->fd_flags, bin->fd_flags);
-
 #endif
-
     if (open_fd == -1)
     {
         bin->internal_errno = errno;
         return bin->error_status = BIN_E_OPEN_FILE;
     }
-
 #endif
     /* At this moment the file has been opened with success */
     bin->pathname = strdup(pathname);
@@ -224,7 +219,7 @@ static BinError_t INTERNAL_BinUnloadFile(BinCtx_t *bin)
         close(bin_fd);
     }
 
-    bin->fd = bin_fd = -1;
+    bin->fd = -1;
     
     if (errno != 0)
         return bin->error_status = BIN_E_CLOSE_FILE;
@@ -260,7 +255,7 @@ static size_t MapFileMemory(BinCtx_t *bin)
     uintptr_t map_end;
 
     /* Or something like: 1,048,576 * x */
-#define MEBIBYTE(x) x * 1024 * 1024 // 1048576
+#define MEBIBYTE(x) ((x) * 1024 * 1024) // 1048576
     assert((bin_file_size = bin->binary_file_size) < MEBIBYTE(124));
     /* Mapping the file in memory */
 #if defined(__unix__)
@@ -287,9 +282,7 @@ static size_t MapFileMemory(BinCtx_t *bin)
     close(bin->fd);
     
     bin->fd = 0;
-    
 #endif
-
     return map_size;
 }
 
@@ -305,7 +298,7 @@ static BinType_t CheckMagic(const unsigned char magic_header[4])
 }
 
 #define READ_MEMORY(dest, size, offset, area)\
-    memcpy(dest, area + offset, size);
+    memcpy(dest, (area) + (offset), size)
 
 static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
 {
@@ -340,14 +333,12 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
             return bin->error_status = BIN_E_FSTAT_FAILED;
     }
 #endif
-
     /* Must be bigger than 0 */
     bin->binary_file_size = bin_size;
 
     if (MapFileMemory(bin) == 0)
         if (bin->error_status != BIN_E_OK)
             return bin->error_status;
-
     uint8_t magic_header[4];
 
     READ_MEMORY(magic_header, sizeof(magic_header), 0, bin->map_start); 
@@ -356,9 +347,7 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
 
     if (bin_type == BT_UNKNOW)
         return bin->error_status = BIN_E_INVALID_FILE;
-    
     bin->binary_type = bin_type;
-
     return bin->error_status = BIN_E_OK;
 }
 
@@ -389,8 +378,8 @@ static const char * const STR_errorsList[] = {
     // BIN_E_IS_EMPTY
     "the supposed binary file is empty",
 
-    // BIN_E_ALREDY_PARSED
-    "the executable has been alredy parsed",
+    // BIN_E_ALREADY_PARSED
+    "the executable has been already parsed",
 
 #if defined(__unix__)
 
