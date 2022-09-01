@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.8)
 
 project(bin VERSION 0.0.3)
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_FLAGS "-Werror -Wall -O2")
+
 set(LIBBIN_SRC
     src/bin.c
 )

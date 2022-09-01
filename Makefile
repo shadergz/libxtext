@@ -8,7 +8,7 @@ lib_objs = src/bin.o
 
 libver = 0.0.3
 
-override CFLAGS=-fPIC -Wall -Werror -pedantic -std=gnu11 -g -I$(libinc)
+override CFLAGS=-fPIC -Wall -pedantic -std=gnu11 -g -I$(libinc)
 
 libobject = $(libname).$(libver).so
 

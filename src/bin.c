@@ -26,7 +26,6 @@ static size_t           INTERNAL_BinGetBinarySize(const BinCtx_t *bin);
 static BinType_t        INTERNAL_BinGetType(const BinCtx_t *bin);
 static const char*      INTERNAL_BinBinaryTypeToStr(BinType_t bin_type);
 
-
 __attribute__((unused)) BinError_t BinLoadFile(const char *pathname, BinCtx_t *bin)
 {
     assert(pathname != NULL);
@@ -113,7 +112,7 @@ static BinType_t INTERNAL_BinGetType(const BinCtx_t *bin)
     return bin->binary_type;
 }
 
-static const char * const STR_binaryTypesList[];
+const char* const STR_binaryTypesList[];
 
 static const char* INTERNAL_BinBinaryTypeToStr(const BinType_t bin_type)
 {
@@ -123,7 +122,7 @@ static const char* INTERNAL_BinBinaryTypeToStr(const BinType_t bin_type)
     return STR_binaryTypesList[bin_type];
 }
 
-static const char * const STR_binaryTypesList[] = {
+const char* const STR_binaryTypesList[] = {
 
     // BT_UNKNOWN
     "unknown (not recognized, a.k.a UNK)",
@@ -308,7 +307,7 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
     if (bin->error_status != BIN_E_OK) 
         return bin->error_status; 
 
-#if defined(__unix__)
+    #if defined(__unix__)
 
     const fd_t fd = bin->fd;
 
@@ -332,7 +331,9 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
         else
             return bin->error_status = BIN_E_FSTAT_FAILED;
     }
-#endif
+
+    #endif
+
     /* Must be bigger than 0 */
     bin->binary_file_size = bin_size;
 
@@ -351,7 +352,7 @@ static BinError_t INTERNAL_BinParser(BinCtx_t *bin)
     return bin->error_status = BIN_E_OK;
 }
 
-static const char * const STR_errorsList[];
+const char* const STR_errorsList[];
 
 static const char* INTERNAL_BinErrorToStr(const BinError_t error_value)
 {
@@ -361,7 +362,7 @@ static const char* INTERNAL_BinErrorToStr(const BinError_t error_value)
     return STR_errorsList[error_value];
 }
 
-static const char * const STR_errorsList[] = {
+const char* const STR_errorsList[] = {
 
     // BIN_E_OK
     "everything is ok",
