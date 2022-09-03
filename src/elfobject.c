@@ -7,5 +7,5 @@
 
 __attribute__((visibility("hidden"))) const uint8_t elfSignature[4] =
 {
-		ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3
+	ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3
 };
