@@ -8,11 +8,10 @@
 
 #include <stdint.h>
 
-extern const uint8_t elfSignature[4];
+extern const uint8_t ELF_Signature[4];
 
 typedef struct
 {
-
 } ObjectSymbolCtx_t;
 
 #endif

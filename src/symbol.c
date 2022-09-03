@@ -2,7 +2,7 @@
 
 #include "bin/binary.h"
 
-__attribute__((unused)) bool BinGetObjectSymHdr(ObjectSymbolCtx_t *symbolCtx, BinCtx_t *bin)
+__attribute__((unused)) bool bin_get_object_symhdr(ObjectSymbolCtx_t *symbolCtx, BinCtx_t *bin)
 {
 	assert(bin);
 	/* Checking if object is a ELF format */

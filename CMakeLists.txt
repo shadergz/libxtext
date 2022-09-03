@@ -7,7 +7,8 @@ set(LIBBIN_INSTALL_LIB TRUE)
 
 set(LIBBIN_SRC
         src/binfront.c
-        include/bin/elftypes.h src/elfobject.c src/symbol.c)
+        src/elfobject.c
+        src/symbol.c)
 
 add_library(${PROJECT_NAME} SHARED ${LIBBIN_SRC})
 
