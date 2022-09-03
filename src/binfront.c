@@ -278,9 +278,15 @@ __attribute__((unused)) bool bin_parser(BinCtx_t *bin)
 	if (binSize == 0)
 	{
 		if (errno == 0)
-			return bin->errorStatus = BIN_E_IS_EMPTY;
+		{
+			bin->errorStatus = BIN_E_IS_EMPTY;
+			return false;
+		}
 		else
-			return bin->errorStatus = BIN_E_FSTAT_FAILED;
+		{
+			bin->errorStatus = BIN_E_FSTAT_FAILED;
+			return false;
+		}
 	}
 	#endif
 	/* Must be bigger than 0 */
