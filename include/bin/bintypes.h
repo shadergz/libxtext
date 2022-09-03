@@ -1,94 +1,96 @@
-#ifndef LIBBIN_BINTYPES_H
-#define LIBBIN_BINTYPES_H
+#ifndef BIN_TYPES_H
+#define BIN_TYPES_H
 
 #include <stdbool.h>
 
 #include <stddef.h>
-
 #include <stdint.h>
 
-typedef int32_t fd_t;
-typedef int32_t flags_t;
+/* File descriptor type, specifiers the FD integral value */
+typedef int32_t FD_t;
+/* Flags type used in IO operations */
+typedef int32_t Flags_t;
 
 typedef enum
 {
     BIN_E_OK = 0,
     /* Can't open the file, maybe the file not exist */
     BIN_E_OPEN_FILE,
-
     /* Can't close the file, maybe has been deleted */
     BIN_E_CLOSE_FILE,
-
-    /* A recently allocation using the malloc function has been failed */
+    /* A recent allocation using the malloc function has been failed */
     BIN_E_MALLOCATION_ERROR,
-
     /* The supposed binary file is empty */
     BIN_E_IS_EMPTY,
-
-    /* The executable has been alredy parsed */
-    BIN_E_ALREDY_PARSED,
-
+    /* The executable was already been parsed */
+    BIN_E_ALREADY_PARSED __attribute__((unused)),
 #if defined(__unix__)
-    /* A recently call for function fstat has returned a fail value */
+    /* A recent call for function fstat has returned a fail value */
     BIN_E_FSTAT_FAILED,
-
-    /* A recently call for mmap has failed */
+    /* A recent call for mmap has failed */
     BIN_E_MMAP_FAILED,
-
-    /* A recently call for munmap has failed */
+    /* A recent call for munmap has failed */
     BIN_E_MUNMAP_FAILED,
-
 #endif
-    /* A recently try to read a chunk of memory has been failed */
-    BIN_E_CANT_READ,
-
-    /* A invalid file has been passed */
+    /* A recent try to read a chunk of memory was failed */
+    BIN_E_CANT_READ __attribute__((unused)),
+    /* An invalid file has been passed */
     BIN_E_INVALID_FILE,
+	/* Object isn't an ELF format */
+	BIN_E_NOT_A_ELF,
 
     BIN_E_FINAL_NULL_VALUE
-
 } BinError_t;
 
 typedef enum
 {
-    // Uknow executable file
-    BT_UNKNOW = 0,
+    // Unknown executable file
+    BT_UNKNOWN __attribute__((unused)) = 0,
     // Portable executable
-    BT_PE_FILE,
+    BT_PE_FILE __attribute__((unused)),
     // Executable and Linkable Format
     BT_ELF_FILE,
-
     BT_FINAL_NULL_VALUE
 } BinType_t;
 
 typedef struct
 {
-    /* Binary file pathname */
-    char *pathname;
+	/* Binary file pathname */
+	char* 		pathname;
+	#if defined(__unix__)
+	FD_t 		objectFD;
+	#if _POSIX_C_SOURCE >= 200809L
+	FD_t 		dirFd;
+	#endif
+    Flags_t 	fdFlags;
+	#endif
+} BinIO_t;
 
-#if defined(__unix__)
-    fd_t fd;
-#if _POSIX_C_SOURCE >= 200809L
-    fd_t dir_fd;
-#endif
-    int32_t internal_errno;
-    flags_t fd_flags;
-#endif
+typedef struct
+{
+	#if defined(__unix__)
+	/* We're mapping the file in memory */
+	uint8_t*	mapStart;
+    uintptr_t 	mapEnd;
+    size_t 		mapSize;
+	#endif
+} BinMap_t;
 
-    size_t binary_file_size;
+typedef struct
+{
+	size_t 		binaryFileSize;
+} BinInfo_t;
 
-    /* A internal error status value (allow the getting method) */
-    BinError_t error_status;
-
-#if defined(__unix__)
-    uint8_t *map_start;
-    uintptr_t map_end;
-    size_t map_size;
-#endif
-
+typedef struct
+{
+	BinIO_t 	binaryFile;
+	int32_t 	internalError;
+    /* An internal error status value (allow the getting method) */
+    BinError_t 	errorStatus;
+	BinInfo_t	binaryInfo;
     /* Executable type (used for parser another structures) */
-    BinType_t binary_type;
-
+    BinType_t 	binaryType;
+	BinMap_t	binaryMap;
 } BinCtx_t;
 
 #endif

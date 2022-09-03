@@ -25,7 +25,7 @@ Just type in your shell:
 
 libbin> mkdir build
 libbin> cd build
-build> cmake ..
+build> cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
 build> make
 
 # With Makefile as builder
