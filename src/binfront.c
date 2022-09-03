@@ -12,31 +12,31 @@
 #include <assert.h>
 #include <string.h>
 
-__attribute__((unused)) const char* LIBRARY_NAME 	= "libbin";
-__attribute__((unused)) const char* LIBRARY_VERSION = "0.0.4";
+__attribute__((unused)) const char* LIBRARY_NAME	=	"libbin";
+__attribute__((unused)) const char* LIBRARY_VERSION	=	"0.0.4";
 
 #include "bin/elftypes.h"
 #include "bin/binary.h"
 
-__attribute__((unused)) const char* bin_get_filename(const BinCtx_t *bin)
+__attribute__((unused)) const char* bin_obj_get_filename(const BinCtx_t *bin)
 {
 	const BinIO_t *bio = &bin->binaryFile;
 	return bio->pathname;
 }
 
-__attribute__((unused)) const BinError_t bin_get_last_error(const BinCtx_t *bin)
+__attribute__((unused)) const BinError_t bin_error_get_last(const BinCtx_t *bin)
 {
 	return bin->errorStatus;
 }
 
-__attribute__((unused)) size_t bin_get_obj_size(const BinCtx_t *bin)
+__attribute__((unused)) size_t bin_obj_get_size(const BinCtx_t *bin)
 {
 	const BinInfo_t *info = &bin->binaryInfo;
 	return info->binaryFileSize;
 }
 
 /* Returns object type current loaded */
-__attribute__((unused)) BinType_t bin_get_obj_type(const BinCtx_t *bin)
+__attribute__((unused)) BinType_t bin_obj_get_type(const BinCtx_t *bin)
 {
 	return bin->binaryType;
 }
@@ -46,8 +46,9 @@ const char* const strBinaryTypesList[];
 __attribute__((unused)) const char* bin_obj_type_to_str(BinType_t bin_type)
 {
 	if (bin_type >= BT_FINAL_NULL_VALUE)
+	{
 		return strBinaryTypesList[BT_FINAL_NULL_VALUE];
-	
+	}
 	return strBinaryTypesList[bin_type];
 }
 
@@ -113,7 +114,8 @@ __attribute__((unused)) bool bin_load_file(const char *pathname, BinCtx_t *bin)
 	if (open_fd == -1)
 	{
 		bin->internalError = errno;
-		return bin->errorStatus = BIN_E_OPEN_FILE;
+		bin->errorStatus = BIN_E_OPEN_FILE;
+		return false;
 	}
 	#endif
 	/* At this moment the file has been opened with success */
@@ -124,7 +126,7 @@ __attribute__((unused)) bool bin_load_file(const char *pathname, BinCtx_t *bin)
 		return false;
 	}
 	bin->errorStatus = BIN_E_OK;
-	return false;
+	return true;
 }
 
 __attribute__((unused)) bool bin_unload_file(BinCtx_t *bin)
@@ -196,7 +198,7 @@ static bool Map_File_Memory(BinCtx_t *bin)
 	BinInfo_t *info = &bin->binaryInfo;
 
 	/* Or something like: 1,048,576 * x */
-	#define MEBIBYTE(x) ((x) * 1024 * 1024) // 1048576
+	#define MEBIBYTE(x)((x) * 1024 * 1024) // 1048576
 	binFileSize = info->binaryFileSize;
 	assert(binFileSize < MEBIBYTE(124));
 	/* Mapping the file in memory */
@@ -221,7 +223,7 @@ static bool Map_File_Memory(BinCtx_t *bin)
 	/* Closing the file descriptor (is not more useful) */
 	close(bio->objectFD);
 	bio->objectFD = -1;
-#endif
+	#endif
 	return true;
 }
 

@@ -25,12 +25,9 @@ Just type in your shell:
 
 libbin> mkdir build
 libbin> cd build
-build> cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
+build> cmake -DCMAKE_BUILD_TYPE=Release ..
 build> make
-
-# With Makefile as builder
-
-libbin> make
+build> sudo make install
 ~~~
 
 ### How to install
