@@ -41,18 +41,18 @@ __attribute__((unused)) BinType_t bin_obj_get_type(const BinCtx_t *bin)
 	return bin->binaryType;
 }
 
-const char* const strBinaryTypesList[];
+const char* const Binary_Types_Str[];
 
 __attribute__((unused)) const char* bin_obj_type_to_str(BinType_t bin_type)
 {
 	if (bin_type >= BT_FINAL_NULL_VALUE)
 	{
-		return strBinaryTypesList[BT_FINAL_NULL_VALUE];
+		return Binary_Types_Str[BT_FINAL_NULL_VALUE];
 	}
-	return strBinaryTypesList[bin_type];
+	return Binary_Types_Str[bin_type];
 }
 
-const char* const strBinaryTypesList[] =
+const char* const Binary_Types_Str[] =
 {
 	// BT_UNKNOWN
 	"unknown (not recognized, a.k.a UNK)",
@@ -310,18 +310,19 @@ __attribute__((unused)) bool bin_parser(BinCtx_t *bin)
 	return true;
 }
 
-static const char* const str_errors_list[];
+static const char* const Errors_Str[];
 
 __attribute__((unused)) const char* bin_error_to_str(const BinError_t error_value)
 {
 	if (error_value >= BIN_E_FINAL_NULL_VALUE)
 	{
-		return str_errors_list[BIN_E_FINAL_NULL_VALUE];
+		return Errors_Str[BIN_E_FINAL_NULL_VALUE];
 	}
-	return str_errors_list[error_value];
+	return Errors_Str[error_value];
 }
 
-static const char* const str_errors_list[] = {
+static const char* const Errors_Str[] =
+{
 	// BIN_E_OK
 	"everything is ok",
 	// BIN_E_OPEN_FILE
