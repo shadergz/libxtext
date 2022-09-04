@@ -12,81 +12,98 @@
 #include <assert.h>
 #include <string.h>
 
-__attribute__((unused)) const char* LIBRARY_NAME	=	"libbin";
-__attribute__((unused)) const char* LIBRARY_VERSION	=	"0.0.4";
-
 #include "bin/elftypes.h"
 #include "bin/binary.h"
+#include "object.h"
 
-__attribute__((unused)) const char* bin_obj_get_filename(const BinCtx_t *bin)
-{
-	const BinIO_t *bio = &bin->binaryFile;
+UNUSED const char* LIBRARY_NAME	= "libbin";
+UNUSED const char* LIBRARY_VERSION = "0.0.4";
+
+#define BIN_HAND_IS_READABLE(ctx, retValue)\
+	if (bin_obj_is_loaded(ctx) == false) {\
+		(ctx)->errorStatus = BIN_E_CANT_READ;\
+		return retValue;\
+	}\
+	(void)ctx
+
+UNUSED const char* bin_obj_get_filename(BinCtx_t *binCtx) {
+	assert(binCtx);
+	BIN_HAND_IS_READABLE(binCtx, NULL);
+	const BinIO_t *bio = &binCtx->binaryFile;
 	return bio->pathname;
 }
 
-__attribute__((unused)) const BinError_t bin_error_get_last(const BinCtx_t *bin)
-{
-	return bin->errorStatus;
+UNUSED const BinError_e bin_error_get_last(const BinCtx_t *binCtx) {
+	return binCtx->errorStatus;
 }
 
-__attribute__((unused)) size_t bin_obj_get_size(const BinCtx_t *bin)
-{
-	const BinInfo_t *info = &bin->binaryInfo;
-	return info->binaryFileSize;
+UNUSED size_t bin_obj_get_size(BinCtx_t *binCtx) {
+	BIN_HAND_IS_READABLE(binCtx, 0);
+	const BinInfo_t *binInfo = &binCtx->binaryInfo;
+	return binInfo->binarySize;
+}
+
+UNUSED size_t bin_obj_memory_size(BinCtx_t *binCtx) {
+	assert(binCtx);
+	BIN_HAND_IS_READABLE(binCtx, 0);
+	const BinMap_t *binMap = &binCtx->binaryMap;
+	return binMap->mapSize;
+}
+
+/* Checks binary type and returns it */
+static BinType_t CheckMagic(const unsigned char magicHeader[4]) {
+	if (memcmp(magicHeader, ELFSignature, sizeof(ELFSignature)) == 0) {
+		/* Binary is a ELF file */
+		return BT_ELF_FILE;
+	}
+	return BT_UNKNOWN;
 }
 
 /* Returns object type current loaded */
-__attribute__((unused)) BinType_t bin_obj_get_type(const BinCtx_t *bin)
-{
-	return bin->binaryType;
+UNUSED BinType_t bin_obj_get_type(BinCtx_t *binCtx) {
+	BIN_HAND_IS_READABLE(binCtx, BT_UNKNOWN);
+	const BinMap_t *binMap = &binCtx->binaryMap;
+	uint8_t *magicHeader = BIN_MAKE_PTR(0, binMap->mapStart);
+	return CheckMagic(magicHeader);
 }
 
-const char* const Binary_Types_Str[];
+const char* const BinaryTypesStr[];
 
-__attribute__((unused)) const char* bin_obj_type_to_str(BinType_t bin_type)
-{
-	if (bin_type >= BT_FINAL_NULL_VALUE)
-	{
-		return Binary_Types_Str[BT_FINAL_NULL_VALUE];
+UNUSED const char* bin_obj_type_to_str(BinType_t binType) {
+	if (binType > BT_ELF_FILE) {
+		binType = BT_UNKNOWN;
 	}
-	return Binary_Types_Str[bin_type];
+	return BinaryTypesStr[binType];
 }
 
-const char* const Binary_Types_Str[] =
-{
+const char* const BinaryTypesStr[] = {
 	// BT_UNKNOWN
 	"unknown (not recognized, a.k.a UNK)",
 	// BT_PE_FILE
 	"portable executable (PE)",
 	// BT_ELF_FILE
 	"executable and linkable format (ELF)",
-	// BT_FINAL_NULL_VALUE
-	"(null)",
 	NULL
 };
 
-__attribute__((unused)) bool bin_load_file(const char *pathname, BinCtx_t *bin)
-{
+UNUSED bool bin_load_file(const char *pathname, BinCtx_t *binCtx) {
 	#define SYNC_IO_OPERATIONS 1
 	bool canRead = false;
 	#if defined(__unix__)
 	canRead = access(pathname, F_OK) == 0;
 	#endif
-	if (canRead == false)
-	{
+	if (canRead == false) {
 	#if defined(__unix__)
-		bin->internalError = errno;
+		binCtx->internalError = errno;
 	#endif
-		bin->errorStatus = BIN_E_OPEN_FILE;
+		binCtx->errorStatus = BIN_E_OPEN_FILE;
 		return false;
 	}
 	/* If there's any file or memory allocated, clear everything now
 	 * before continue!
 	*/
-	memset(bin, 0, sizeof(BinCtx_t));
-
-	BinIO_t *binIO = &bin->binaryFile;
-
+	memset(binCtx, 0, sizeof(BinCtx_t));
+	BinIO_t *binIO = &binCtx->binaryFile;
 	#if defined(__unix__)
 	binIO->fdFlags =
 	#if SYNC_IO_OPERATIONS
@@ -96,77 +113,65 @@ __attribute__((unused)) bool bin_load_file(const char *pathname, BinCtx_t *bin)
 		O_RDONLY;
 	#if _POSIX_C_SOURCE >= 200809L
 	/* Opening current directory stored by process */
-	FD_t open_dir = binIO->dirFd = open(".", O_DIRECTORY | /* O_PATH */ O_RDONLY);
+	FD_t openDir = binIO->dirFd = open(".", O_DIRECTORY | /* O_PATH */ O_RDONLY);
 
-	if (open_dir == -1)
-	{
-		bin->internalError = errno;
-		bin->errorStatus = BIN_E_OPEN_FILE;
+	if (openDir == -1) {
+		binCtx->internalError = errno;
+		binCtx->errorStatus = BIN_E_OPEN_FILE;
 		return false;
 	}
 
-	const FD_t open_fd = binIO->objectFD = openat(binIO->dirFd, pathname, binIO->fdFlags);
+	const FD_t openFD = binIO->objectFD = openat(binIO->dirFd, pathname, binIO->fdFlags);
 	close(binIO->dirFd);
 	binIO->dirFd = -1;
 	#else
 	#error ""
 	#endif
-	if (open_fd == -1)
-	{
-		bin->internalError = errno;
-		bin->errorStatus = BIN_E_OPEN_FILE;
+	if (openFD == -1) {
+		binCtx->internalError = errno;
+		binCtx->errorStatus = BIN_E_OPEN_FILE;
 		return false;
 	}
 	#endif
 	/* At this moment the file has been opened with success */
 	binIO->pathname = strdup(pathname);
-	if (binIO->pathname == NULL)
-	{
-		bin->errorStatus = BIN_E_MALLOCATION_ERROR;
+	if (binIO->pathname == NULL) {
+		binCtx->errorStatus = BIN_E_MALLOCATION_ERROR;
 		return false;
 	}
-	bin->errorStatus = BIN_E_OK;
+	binCtx->errorStatus = BIN_E_OK;
 	return true;
 }
 
-__attribute__((unused)) bool bin_unload_file(BinCtx_t *bin)
-{
+UNUSED bool bin_unload_file(BinCtx_t *bin) {
 	assert(bin != NULL);
 	#if defined(__unix__)
 	errno = 0;
-
 	BinIO_t *bio = &bin->binaryFile;
 	FD_t binFD = bio->objectFD;
 
-	if (bio->pathname != NULL)
-	{
+	if (bio->pathname != NULL) {
 		free(bio->pathname);
 		bio->pathname = NULL;
 	}
-	if (binFD != -1)
-	{
+	if (binFD != -1) {
 		close(binFD);
 		/* Ensuring an invalid state after the file was closed */
 		bio->objectFD = binFD = -1;
 	}
-	if (errno != 0)
-	{
+	if (errno != 0) {
 		bin->errorStatus = BIN_E_CLOSE_FILE;
 		return false;
 	}
 	#endif
-
 	bin->errorStatus = BIN_E_OK;
-
 	return true;
 }
 
-
-static bool Unmap_File_Memory(BinCtx_t *bin)
-{    
+static bool UnmapFileMemory(BinCtx_t *binCtx) {
 	void *mapStart;
 	size_t mapSize;
-	BinMap_t *map = &bin->binaryMap;
+	BinMap_t *map = &binCtx->binaryMap;
 
 	mapStart = map->mapStart;
 	mapSize = map->mapSize;
@@ -174,10 +179,9 @@ static bool Unmap_File_Memory(BinCtx_t *bin)
 	assert(map->mapEnd != 0);
 	assert(mapSize != 0);
 
-	if (munmap(mapStart, mapSize) != 0)
-	{
-		bin->internalError = errno;
-		bin->errorStatus = BIN_E_MUNMAP_FAILED;
+	if (munmap(mapStart, mapSize) != 0) {
+		binCtx->internalError = errno;
+		binCtx->errorStatus = BIN_E_MUNMAP_FAILED;
 	}
 	map->mapStart = NULL;
 	map->mapEnd = map->mapSize = 0;
@@ -186,20 +190,19 @@ static bool Unmap_File_Memory(BinCtx_t *bin)
 }
 
 /* Returns the number of pages allocated (MEMORY / 1024) */
-static bool Map_File_Memory(BinCtx_t *bin)
-{
-	size_t binFileSize;
+static bool MapFileMemory(BinCtx_t *bin) {
 	size_t mapSize;
 	uint8_t *mapStart;
 	uintptr_t mapEnd;
 
 	BinMap_t *map = &bin->binaryMap;
 	BinIO_t *bio = &bin->binaryFile;
-	BinInfo_t *info = &bin->binaryInfo;
+	BinInfo_t *binInfo = &bin->binaryInfo;
+
+	size_t binFileSize = binInfo->binarySize;
 
 	/* Or something like: 1,048,576 * x */
 	#define MEBIBYTE(x)((x) * 1024 * 1024) // 1048576
-	binFileSize = info->binaryFileSize;
 	assert(binFileSize < MEBIBYTE(124));
 	/* Mapping the file in memory */
 	#if defined(__unix__)
@@ -208,8 +211,7 @@ static bool Map_File_Memory(BinCtx_t *bin)
 	mapSize = binFileSize;
 	mapStart = mmap(NULL, mapSize, mapProt, mapFlags, bio->objectFD, 0);
 
-	if (mapStart == MAP_FAILED)
-	{
+	if (mapStart == MAP_FAILED) {
 		bin->errorStatus = BIN_E_MMAP_FAILED;
 		return false;
 	}
@@ -227,108 +229,66 @@ static bool Map_File_Memory(BinCtx_t *bin)
 	return true;
 }
 
-/* Checks binary type and returns it */
-static BinType_t Check_Magic(const unsigned char magic_header[4])
-{
-	if (memcmp(magic_header, ELF_Signature, sizeof(ELF_Signature)) == 0)
-	{
-		/* Binary is a ELF file */
-		return BT_ELF_FILE;
-	}
-	return BT_UNKNOWN;
-}
+UNUSED bool bin_parser(BinCtx_t *binCtx) {
+	BinIO_t *bio = &binCtx->binaryFile;
+	BinInfo_t *binInfo = &binCtx->binaryInfo;
 
-/*
-#define COPY_MEM_OBJ(dest, size, offset, area)\
-	memcpy(dest, (area) + (offset), size)
-*/
-
-__attribute__((unused)) bool bin_parser(BinCtx_t *bin)
-{
-	BinIO_t *bio = &bin->binaryFile;
-	BinInfo_t *info = &bin->binaryInfo;
-	BinMap_t *map = &bin->binaryMap;
-
-	if (info->binaryFileSize != 0)
-	{
-		bin->errorStatus = BIN_E_ALREADY_PARSED;
+	if (binCtx->errorStatus != BIN_E_OK) {
 		return false;
 	}
-	if (bin->errorStatus != BIN_E_OK)
-	{
+
+	if (bin_obj_is_loaded(binCtx) == true) {
+		binCtx->errorStatus = BIN_E_ALREADY_PARSED;
 		return false;
 	}
 	#if defined(__unix__)
 	const FD_t fd = bio->objectFD;
-	if (fd == -1)
-	{
-		bin->errorStatus = BIN_E_OPEN_FILE;
+	if (fd == -1) {
+		binCtx->errorStatus = BIN_E_OPEN_FILE;
 		return false;
 	}
 	errno = 0;
 	struct stat fdStat;
 	const int32_t statRet = fstat(fd, &fdStat);
-	if (statRet == -1)
-	{
-		bin->errorStatus = BIN_E_FSTAT_FAILED;
+	if (statRet == -1) {
+		binCtx->errorStatus = BIN_E_FSTAT_FAILED;
 		return false;
 	}
 	const size_t binSize = fdStat.st_size;
 
-	if (binSize == 0)
-	{
-		if (errno == 0)
-		{
-			bin->errorStatus = BIN_E_IS_EMPTY;
+	if (binSize == 0) {
+		if (errno == 0) {
+			binCtx->errorStatus = BIN_E_IS_EMPTY;
 			return false;
 		}
-		else
-		{
-			bin->errorStatus = BIN_E_FSTAT_FAILED;
+		else {
+			binCtx->errorStatus = BIN_E_FSTAT_FAILED;
 			return false;
 		}
 	}
+	binInfo->binarySize = binSize;
+
 	#endif
 	/* Must be bigger than 0 */
-	info->binaryFileSize = binSize;
-	if (Map_File_Memory(bin) == false)
-	{
-		if (bin->errorStatus != BIN_E_OK)
-		{
+	if (MapFileMemory(binCtx) == false) {
+		if (binCtx->errorStatus != BIN_E_OK) {
 			return false;
 		}
 	}
-	uint8_t *magicHeader;
-	// uint8_t magicHeader[4];
-	/* COPY_MEM_OBJ(magicHeader, sizeof(magicHeader), 0, map->mapStart); */
-	magicHeader = map->mapStart;
-	const BinType_t bin_type = Check_Magic(magicHeader);
-	/* From this point, the object has been noted has a ELF file */
-	if (bin_type == BT_UNKNOWN)
-	{
-		bin->errorStatus = BIN_E_INVALID_FILE;
-		return false;
-	}
-
-	bin->binaryType = bin_type;
-	bin->errorStatus = BIN_E_OK;
-
+	binCtx->errorStatus = BIN_E_OK;
 	return true;
 }
 
-static const char* const Errors_Str[];
+static const char* const ErrorsStr[];
 
-__attribute__((unused)) const char* bin_error_to_str(const BinError_t error_value)
-{
-	if (error_value >= BIN_E_FINAL_NULL_VALUE)
-	{
-		return Errors_Str[BIN_E_FINAL_NULL_VALUE];
+UNUSED const char* bin_error_to_str(BinError_e errorValue) {
+	if (errorValue > BIN_E_NOT_A_ELF) {
+		errorValue = BIN_E_NOT_A_ELF;
 	}
-	return Errors_Str[error_value];
+	return ErrorsStr[errorValue];
 }
 
-static const char* const Errors_Str[] =
-{
+static const char* const ErrorsStr[] = {
 	// BIN_E_OK
 	"everything is ok",
 	// BIN_E_OPEN_FILE
@@ -355,26 +315,125 @@ static const char* const Errors_Str[] =
 	"an invalid file name was been passed",
 	// BIN_E_NOT_A_ELF
 	"object file isn't an ELF",
-	// BIN_E_FINAL_NULL_VALUE
-	/* Invalid error values */
-	"(null)",
 	NULL
 };
 
-__attribute__((unused)) bool bin_finish(BinCtx_t *bin)
-{
-	if (bin_unload_file(bin) != BIN_E_OK)
-	{
+static const char* CPUEndiannessStr[] = {
+	"unknown CPU endianness",
+	"2's complement, little endian",
+	"2's complement, big endian",
+	NULL
+};
+
+UNUSED const char* bin_cpu_endian_to_str(CPU_Endian_e cpuEndian) {
+	if (cpuEndian > CPUE_BIG) {
+		cpuEndian = CPUE_UNKNOWN;
+	}
+	return CPUEndiannessStr[cpuEndian];
+}
+
+/* Translate a ELFEndian_e into a CPU_Endian_e */
+static CPU_Endian_e ELFCPUEndian(ELFEndian_e elfEndian) {
+	switch (elfEndian) {
+		default:
+		case ELF_DATA_NONE: return CPUE_UNKNOWN;
+		case ELF_DATA_2LSB: return CPUE_LITTLE;
+		case ELF_DATA_2MSB: return CPUE_BIG;
+	}
+}
+
+/* Returns object CPU endianness */
+UNUSED CPU_Endian_e bin_obj_get_endian(BinCtx_t *binCtx) {
+	assert(binCtx);
+	CPU_Endian_e cpuEndianE = CPUE_LITTLE;
+	const BinMap_t *binMap = &binCtx->binaryMap;
+	const uint8_t *elfIdent = (const uint8_t*)BIN_MAKE_PTR(ELF_IDENT_OFF, binMap->mapStart);
+	switch (bin_obj_get_type(binCtx)) {
+	case BT_UNKNOWN:
+	case BT_ELF_FILE:
+		cpuEndianE = ELFCPUEndian((ELFEndian_e) elfIdent[5]); break;
+	case BT_PE_FILE: break;
+	}
+
+	return cpuEndianE;
+}
+
+static const char* BinaryClassStr[] = {
+	"unknown object class",
+	"32 bits",
+	"64 bits"
+};
+
+UNUSED const char* bin_class_to_str(ClassBits_e classBits) {
+	if (classBits > CLASS_64_BITS) {
+		classBits = CLASS_UNKNOWN;
+	}
+	return BinaryClassStr[classBits];
+}
+
+static ClassBits_e ELFClass(ELFClass_e elfClass) {
+	switch (elfClass) {
+		default:
+		case ELF_CLASS_32: return CLASS_32_BITS;
+		case ELF_CLASS_64: return CLASS_64_BITS;
+	}
+}
+
+UNUSED ClassBits_e bin_obj_get_class(BinCtx_t *binCtx) {
+	assert(binCtx);
+	BIN_HAND_IS_READABLE(binCtx, false);
+	ClassBits_e classBits = CLASS_32_BITS;
+	const BinMap_t *binMap = &binCtx->binaryMap;
+	const uint8_t *elfIdent = (const uint8_t*)BIN_MAKE_PTR(ELF_IDENT_OFF, binMap->mapStart);
+
+	switch(bin_obj_get_type(binCtx)) {
+	case BT_ELF_FILE:
+		classBits = ELFClass((ELFClass_e) elfIdent[ELF_IDENT_CLASS]);
+	case BT_PE_FILE:
+	case BT_UNKNOWN: break;
+	}
+	return classBits;
+}
+
+UNUSED bool bin_obj_class_is_32b(BinCtx_t *binCtx) {
+	assert(binCtx);
+	return bin_obj_get_class(binCtx) == CLASS_32_BITS;
+}
+
+UNUSED bool bin_obj_class_is_64b(BinCtx_t *binCtx) {
+	assert(binCtx);
+	return bin_obj_get_class(binCtx) == CLASS_64_BITS;
+}
+
+UNUSED bool bin_obj_is_loaded(const BinCtx_t *binCtx) {
+	assert(binCtx);
+	const BinMap_t *binMap = &binCtx->binaryMap;
+	return binMap->mapStart != NULL && binMap->mapSize > 0;
+}
+
+/* Sanitizer check if binary is an ELF format */
+UNUSED bool bin_obj_is_ELF(BinCtx_t *binCtx) {
+	assert(binCtx);
+	BIN_HAND_IS_READABLE(binCtx, false);
+
+	const BinMap_t *binMap = &binCtx->binaryMap;
+	const uint8_t *elfIdent = (const uint8_t*)BIN_MAKE_PTR(ELF_IDENT_OFF, binMap->mapStart);
+	uint8_t headerMagic[4];
+	memcpy(headerMagic, elfIdent, sizeof(headerMagic));
+	return CheckMagic(headerMagic) == BT_ELF_FILE;
+}
+
+UNUSED bool bin_finish(BinCtx_t *bin) {
+	if (bin_unload_file(bin) != BIN_E_OK) {
 		return false;
 	}
 	/* Unmapping memory region pages allocated for binary */
-	Unmap_File_Memory(bin);
-	if (bin->errorStatus == BIN_E_MUNMAP_FAILED)
-	{
+	UnmapFileMemory(bin);
+	if (bin->errorStatus == BIN_E_MUNMAP_FAILED) {
 		return false;
 	}
 	/* Must be BIN_E_OK */
-	const BinError_t errorStatus = bin->errorStatus;
+	const BinError_e errorStatus = bin->errorStatus;
 	memset(bin, 0, sizeof(BinCtx_t));
 	return errorStatus;
 }

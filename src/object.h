@@ -1,9 +1,11 @@
 #ifndef BIN_OBJECT_H
 #define BIN_OBJECT_H
 
-#define BIN_ADD_PTR(relative, map)\
-	(relative + map)
+#include "bin/elftypes.h"
 
-const ELFHeader_Ctx_t* ELF_Get_Header(BinCtx_t *bin);
+#define ELF_IDENT_OFF offsetof(ELFHeaderCtx_t, elfIdent)
+
+#define BIN_MAKE_PTR(relative, map)\
+	(relative + map)
 
 #endif

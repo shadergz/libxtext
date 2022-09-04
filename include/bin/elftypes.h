@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-extern const uint8_t ELF_Signature[4];
+extern const uint8_t ELFSignature[4];
 
 #define EI_NIDENT 16
 
@@ -23,23 +23,19 @@ typedef struct {
 	uint16_t	elfType;
 	uint16_t	elfMachine;
 	uint32_t	elfVersion;
-	union
-	{
+	union {
 		ELF32Addr_t elf32Entry;
 		ELF64Addr_t elf64Entry;
 	};
-	union
-	{
+	union {
 		Elf32Off_t elf32Off;
 		Elf64Off_t elf64Off;
 	};
-	union
-	{
+	union {
 		Elf32Off_t elf32Phoff;
 		Elf64Off_t elf64Phoff;
 	};
-	union
-	{
+	union {
 		Elf32Off_t elf32Shoff;
 		Elf64Off_t elf64Shoff;
 	};
@@ -62,11 +58,19 @@ typedef struct {
 	 * holds the value SHN_UNDEF.
 	*/
 	uint16_t      elfSecHeaderTabIndex;
-} ELFHeader_Ctx_t;
+} ELFHeaderCtx_t;
 
-typedef struct
-{
+typedef enum {
+	ELF_DATA_NONE = 0,
+	ELF_DATA_2LSB,
+	ELF_DATA_2MSB
+} ELFEndian_e;
 
-} ObjectSymbolCtx_t;
+typedef enum {
+	ELF_CLASS_32 = 1,
+	ELF_CLASS_64
+} ELFClass_e;
+
+#define ELF_IDENT_CLASS 4
 
 #endif

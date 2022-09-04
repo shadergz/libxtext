@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "common.h"
+
 /* File descriptor type, specifiers the FD integral value */
 typedef int32_t FD_t;
 /* Flags type used in IO operations */
@@ -22,8 +24,8 @@ typedef enum
 	BIN_E_MALLOCATION_ERROR,
 	/* The supposed binary file is empty */
 	BIN_E_IS_EMPTY,
-	/* The executable was already been parsed */
-	BIN_E_ALREADY_PARSED __attribute__((unused)),
+	/* Executable was already been parsed */
+	BIN_E_ALREADY_PARSED UNUSED,
 #if defined(__unix__)
 	/* A recent call for function fstat has returned a fail value */
 	BIN_E_FSTAT_FAILED,
@@ -33,24 +35,27 @@ typedef enum
 	BIN_E_MUNMAP_FAILED,
 #endif
 	/* A recent try to read a chunk of memory was failed */
-	BIN_E_CANT_READ __attribute__((unused)),
+	BIN_E_CANT_READ,
 	/* An invalid file has been passed */
-	BIN_E_INVALID_FILE,
+	BIN_E_INVALID_FILE UNUSED,
 	/* Object isn't an ELF format */
-	BIN_E_NOT_A_ELF,
+	BIN_E_NOT_A_ELF UNUSED,
+} BinError_e;
 
-	BIN_E_FINAL_NULL_VALUE
-} BinError_t;
+/* CPU endianness of binary file */
+typedef enum {
+	CPUE_UNKNOWN = 0,
+	CPUE_LITTLE,
+	CPUE_BIG
+} CPU_Endian_e;
 
-typedef enum
-{
+typedef enum {
 	// Unknown executable file
-	BT_UNKNOWN __attribute__((unused)) = 0,
+	BT_UNKNOWN = 0,
 	// Portable executable
-	BT_PE_FILE __attribute__((unused)),
+	BT_PE_FILE UNUSED,
 	// Executable and Linkable Format
-	BT_ELF_FILE,
-	BT_FINAL_NULL_VALUE
+	BT_ELF_FILE
 } BinType_t;
 
 typedef struct
@@ -70,27 +75,35 @@ typedef struct
 {
 	#if defined(__unix__)
 	/* We're mapping the file in memory */
-	uint8_t*	mapStart;
+	union
+	{
+		uint8_t *mapStart;
+		/* Automatically setted when mapStart gains a valid pointer */
+		bool mapIsAllocated;
+	};
 	uintptr_t 	mapEnd;
 	size_t 		mapSize;
 	#endif
 } BinMap_t;
 
-typedef struct
-{
-	size_t 		binaryFileSize;
+typedef enum {
+	CLASS_UNKNOWN = 0,
+	CLASS_32_BITS,
+	CLASS_64_BITS
+} ClassBits_e;
+
+typedef struct {
+	size_t		binarySize;
 } BinInfo_t;
 
-typedef struct
-{
+typedef struct {
 	BinIO_t 	binaryFile;
 	int32_t 	internalError;
 	/* An internal error status value (allow the getting method) */
-	BinError_t 	errorStatus;
-	BinInfo_t	binaryInfo;
+	BinError_e 	errorStatus;
 	/* Executable type (used for parser another structures) */
-	BinType_t 	binaryType;
 	BinMap_t	binaryMap;
+	BinInfo_t	binaryInfo;
 } BinCtx_t;
 
 #endif
