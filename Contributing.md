@@ -3,7 +3,7 @@
 ## Name convention
 
 - PascalCase for not exportable symbols from library (this is applied for static and hidden functions)
-- snake_case for symbols exported for library outside world
+- snake_case for symbols exported for the library outside world
 
 ## Code properties
 

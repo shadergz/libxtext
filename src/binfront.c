@@ -26,6 +26,14 @@ UNUSED const char* LIBRARY_VERSION = "0.0.4";
     }\
     (void)ctx
 
+UNUSED bool bin_obj_exist(const char *pathname) {
+    return access(pathname, F_OK) == 0;
+}
+
+UNUSED bool bin_obj_can_read(const char *pathname) {
+    return access(pathname, R_OK) == 0;
+}
+
 UNUSED const char* bin_obj_get_filename(BinCtx_t *binCtx) {
     assert(binCtx);
     BIN_HAND_IS_READABLE(binCtx, NULL);
@@ -44,7 +52,7 @@ UNUSED size_t bin_obj_get_size(BinCtx_t *binCtx) {
 }
 
 UNUSED size_t bin_obj_memory_size(BinCtx_t *binCtx) {
-    assert(binCtx);
+    assert(binCtx != NULL);
     BIN_HAND_IS_READABLE(binCtx, 0);
     const BinMap_t *binMap = &binCtx->binaryMap;
     return binMap->mapSize;
@@ -88,14 +96,10 @@ const char* const BinaryTypesStr[] = {
 
 UNUSED bool bin_load_file(const char *pathname, BinCtx_t *binCtx) {
     #define SYNC_IO_OPERATIONS 1
-    bool canRead = false;
-    #if defined(__unix__)
-    canRead = access(pathname, F_OK) == 0;
-    #endif
-    if (canRead == false) {
-    #if defined(__unix__)
+    if (bin_obj_can_read(pathname) == false) {
+        #if defined(__unix__)
         binCtx->internalError = errno;
-    #endif
+        #endif
         binCtx->errorStatus = BIN_E_OPEN_FILE;
         return false;
     }
@@ -113,7 +117,7 @@ UNUSED bool bin_load_file(const char *pathname, BinCtx_t *binCtx) {
         O_RDONLY;
     #if _POSIX_C_SOURCE >= 200809L
     /* Opening current directory stored by process */
-    FD_t openDir = binIO->dirFd = open(".", O_DIRECTORY | /* O_PATH */ O_RDONLY);
+    FD_t openDir = binIO->dirFD = open(".", O_DIRECTORY | /* O_PATH */ O_RDONLY);
 
     if (openDir == -1) {
         binCtx->internalError = errno;
@@ -121,17 +125,17 @@ UNUSED bool bin_load_file(const char *pathname, BinCtx_t *binCtx) {
         return false;
     }
 
-    const FD_t openFD = binIO->objectFD = openat(binIO->dirFd, pathname, binIO->fdFlags);
-    close(binIO->dirFd);
-    binIO->dirFd = -1;
-    #else
-    #error ""
-    #endif
+    const FD_t openFD = binIO->objectFD = openat(binIO->dirFD, pathname, binIO->fdFlags);
     if (openFD == -1) {
         binCtx->internalError = errno;
         binCtx->errorStatus = BIN_E_OPEN_FILE;
         return false;
     }
+    close(binIO->dirFD);
+    binIO->dirFD = -1;
+    #else
+    const FD_t openFD = binIO->objectFD = open(pathname, binIO->fdFlags);
+    #endif
     #endif
     /* At this moment the file has been opened with success */
     binIO->pathname = strdup(pathname);
@@ -146,6 +150,7 @@ UNUSED bool bin_load_file(const char *pathname, BinCtx_t *binCtx) {
 UNUSED bool bin_unload_file(BinCtx_t *bin) {
     assert(bin != NULL);
     #if defined(__unix__)
+    /* Cleaning errno state */
     errno = 0;
     BinIO_t *bio = &bin->binaryFile;
     FD_t binFD = bio->objectFD;
@@ -179,10 +184,12 @@ static bool UnmapFileMemory(BinCtx_t *binCtx) {
     assert(map->mapEnd != 0);
     assert(mapSize != 0);
 
+    #if defined(__unix__)
     if (munmap(mapStart, mapSize) != 0) {
         binCtx->internalError = errno;
         binCtx->errorStatus = BIN_E_MUNMAP_FAILED;
     }
+    #endif
     map->mapStart = NULL;
     map->mapEnd = map->mapSize = 0;
 
@@ -344,7 +351,7 @@ static CPU_Endian_e ELFCPUEndian(ELFEndian_e elfEndian) {
 
 /* Returns object CPU endianness */
 UNUSED CPU_Endian_e bin_obj_get_endian(BinCtx_t *binCtx) {
-    assert(binCtx);
+    assert(binCtx != NULL);
     CPU_Endian_e cpuEndianE = CPUE_LITTLE;
     const BinMap_t *binMap = &binCtx->binaryMap;
     const uint8_t *elfIdent = (const uint8_t*)BIN_MAKE_PTR(ELF_IDENT_OFF, binMap->mapStart);
@@ -380,7 +387,7 @@ static ClassBits_e ELFClass(ELFClass_e elfClass) {
 }
 
 UNUSED ClassBits_e bin_obj_get_class(BinCtx_t *binCtx) {
-    assert(binCtx);
+    assert(binCtx != NULL);
     BIN_HAND_IS_READABLE(binCtx, false);
     ClassBits_e classBits = CLASS_32_BITS;
     const BinMap_t *binMap = &binCtx->binaryMap;
@@ -396,24 +403,103 @@ UNUSED ClassBits_e bin_obj_get_class(BinCtx_t *binCtx) {
 }
 
 UNUSED bool bin_obj_class_is_32b(BinCtx_t *binCtx) {
-    assert(binCtx);
+    assert(binCtx != NULL);
     return bin_obj_get_class(binCtx) == CLASS_32_BITS;
 }
 
 UNUSED bool bin_obj_class_is_64b(BinCtx_t *binCtx) {
-    assert(binCtx);
+    assert(binCtx != NULL);
     return bin_obj_get_class(binCtx) == CLASS_64_BITS;
 }
 
-UNUSED bool bin_obj_is_loaded(const BinCtx_t *binCtx) {
+UNUSED bool bin_obj_symhdr_foreach(BinCtx_t *binCtx, CallbackSymHdrFunc_t userFunc, ELFSecHdr_t *useObject) {
     assert(binCtx);
+    BIN_HAND_IS_READABLE(binCtx, false);
+    if (bin_obj_is_ELF(binCtx) == false) {
+        /* The file isn't an ELF format */
+        binCtx->errorStatus = BIN_E_NOT_A_ELF;
+        return false;
+    }
+
+    uint64_t secOffset;
+    uint16_t secSize, secCount;
+
+    const ClassBits_e class = bin_obj_get_class(binCtx);
+    switch (class) {
+    case CLASS_64_BITS:
+        secOffset = ELF_SYMHDR64_OFF;
+        secSize = ELF_SECHDR64_SZ_OFF;
+        secCount = ELF_SECHDR64_COUNT_OFF;
+    case CLASS_32_BITS:
+    case CLASS_UNKNOWN: default: break;
+    }
+
+    BinMap_t *binMap = &binCtx->binaryMap;
+    int_fast32_t offsetIndex = 0;
+
+#define BIN_COPY_PTR(dest, relative, map)\
+    memcpy(&(dest), BIN_MAKE_PTR(relative, map), sizeof(dest))
+
+    BIN_COPY_PTR(secOffset, secOffset, binMap->mapStart);
+    BIN_COPY_PTR(secSize, secSize, binMap->mapStart);
+    BIN_COPY_PTR(secCount, secCount, binMap->mapStart);
+    for (; secCount-- > 0; ) {
+        if (userFunc(binCtx, (ELFSecHdr_t*)BIN_MAKE_PTR(secOffset + secSize * offsetIndex++,
+                                                        binMap->mapStart), useObject) == false)
+            break;
+    }
+    return true;
+}
+
+static bool ELFSearchForSymbolTable(BinCtx_t *binCtx, const ELFSecHdr_t *funcObject, ELFSecHdr_t *userObject) {
+
+    const ELFSecHdr64_t *elfSecHdr64 = (const ELFSecHdr64_t*)&funcObject->header64;
+    /* const ELFSecHdr32_t *elfSecHdr32 = (const ELFSecHdr32_t*)&funcObject->header32; */
+
+    if (bin_obj_class_is_64b(binCtx)) {
+        if (elfSecHdr64->secType == SHT_SYM_TAB) {
+            memcpy(userObject, funcObject, sizeof(ELFSecHdr_t));
+        }
+    }
+    return true;
+}
+
+UNUSED bool bin_obj_symbols_foreach(BinCtx_t *binCtx, CallbackSymbolsFunc_t userFunc, ObjectSymbol_t *userObject) {
+    assert(binCtx != NULL && userFunc != NULL);
+
+    ELFSecHdr_t symbolTable = {0};
+
+    /*
+        ELFSecHdr_t namesTable = {0};
+        ELFSecHdr_t stringsTable = {0};
+    */
+
+    BIN_HAND_IS_READABLE(binCtx, false);
+
+    switch(bin_obj_get_type(binCtx)) {
+    case BT_ELF_FILE:
+        /* Search for symbol table inside the object */
+        bin_obj_symhdr_foreach(binCtx, ELFSearchForSymbolTable, &symbolTable);
+        /*
+            bin_obj_symhdr_foreach(binCtx, ELFSearchForNamesTable, &namesTable);
+            bin_obj_symhdr_foreach(binCtx, ELFSearchForNamesTable, &stringsTable);
+        */
+        case BT_PE_FILE:
+    case BT_UNKNOWN: break;
+    }
+
+    return true;
+}
+
+UNUSED bool bin_obj_is_loaded(const BinCtx_t *binCtx) {
+    assert(binCtx != NULL);
     const BinMap_t *binMap = &binCtx->binaryMap;
     return binMap->mapStart != NULL && binMap->mapSize > 0;
 }
 
 /* Sanitizer check if binary is an ELF format */
 UNUSED bool bin_obj_is_ELF(BinCtx_t *binCtx) {
-    assert(binCtx);
+    assert(binCtx != NULL);
     BIN_HAND_IS_READABLE(binCtx, false);
 
     const BinMap_t *binMap = &binCtx->binaryMap;

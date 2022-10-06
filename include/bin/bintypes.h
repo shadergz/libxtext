@@ -65,7 +65,7 @@ typedef struct
     #if defined(__unix__)
     FD_t 		objectFD;
     #if _POSIX_C_SOURCE >= 200809L
-    FD_t 		dirFd;
+    FD_t 		dirFD;
     #endif
     Flags_t 	fdFlags;
     #endif
@@ -95,6 +95,10 @@ typedef enum {
 typedef struct {
     size_t		binarySize;
 } BinInfo_t;
+
+typedef struct {
+
+} ObjectSymbol_t;
 
 typedef struct {
     BinIO_t 	binaryFile;
