@@ -246,17 +246,17 @@ map_file_memory (xtext_ctx_t *xtext)
   xtext_io_t *bio = &xtext->binary_file;
   xtext_info_t *xbin_info = &xtext->binary_info;
 
-  size_t bin_file_Size = xbin_info->binary_size;
+  size_t bin_filesize = xbin_info->binary_size;
 
 /* Or something like: 1,048,576 * x */
 #define MEBIBYTE(x) ((x)*1024 * 1024) // 1048576
-  assert (bin_file_Size < MEBIBYTE (124));
+  assert (bin_filesize < MEBIBYTE (124));
 /* Mapping the file in memory */
 #if defined(__unix__)
   const int32_t prot = PROT_READ | PROT_WRITE;
   const int32_t flags = /* MAP_SHARED */ MAP_PRIVATE;
 
-  map_size = bin_file_Size;
+  map_size = bin_filesize;
   map_start = mmap (NULL, map_size, prot, flags, bio->object_nfd, 0);
 
   if (map_start == MAP_FAILED)
@@ -526,12 +526,12 @@ xtext_obj_symhdr_foreach (xtext_ctx_t *xtext_ctx, cb_sym_hdr_t user_func,
   xtext_map_t *heap_xbin_mmap = &xtext_ctx->binary_map;
   int_fast32_t offset_index = 0;
 
-#define BIN_COPY_PTR(dest, relative, map)                                     \
+#define XTERN_COPY_PTR(dest, relative, map)                                     \
   memcpy (&(dest), XTEXT_MAKE_PTR (relative, map), sizeof (dest))
 
-  BIN_COPY_PTR (sec_off, sec_off, heap_xbin_mmap->map_start);
-  BIN_COPY_PTR (sec_size, sec_size, heap_xbin_mmap->map_start);
-  BIN_COPY_PTR (sec_count, sec_count, heap_xbin_mmap->map_start);
+  XTERN_COPY_PTR (sec_off, sec_off, heap_xbin_mmap->map_start);
+  XTERN_COPY_PTR (sec_size, sec_size, heap_xbin_mmap->map_start);
+  XTERN_COPY_PTR (sec_count, sec_count, heap_xbin_mmap->map_start);
   for (; sec_count-- > 0;)
     {
       if (user_func (xtext_ctx,
