@@ -2,9 +2,8 @@
 
 ## Name convention
 
-- PascalCase for not exportable symbols from library (this is applied for static and hidden functions)
-- snake_case for symbols exported for the library outside world
+- snake_case for everything in the code (variables, contants, functions and others)
 
 ## Code properties
 
-- Every interface function will be available in "bin/binary.h" header file
+- Every interface function will be available in ```<xtext/binary.h>``` header file

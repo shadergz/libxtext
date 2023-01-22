@@ -1,6 +1,6 @@
-# libbin
+# libxtext (library)
 
-A portable C library for handler executable files based on libpe structure
+A portable C library for handler executable files (PE, ELF) based on libpe structure
 
 ## Supported platforms
 
@@ -10,11 +10,8 @@ A portable C library for handler executable files based on libpe structure
 - OpenBSD
 
 ## Windows
-
 ### How to compile
-
 ## Unix/Unix-likes
-
 ### How to compile
 
 Just type in your shell:
@@ -23,8 +20,8 @@ Just type in your shell:
 
 # With CMake as build system
 
-libbin> mkdir build
-libbin> cd build
+libxtext> mkdir build
+libxtext> cd build
 build> cmake -DCMAKE_BUILD_TYPE=Release ..
 build> make
 build> sudo make install

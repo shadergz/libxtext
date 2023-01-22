@@ -1,34 +1,37 @@
 cmake_minimum_required(VERSION 3.8)
-project(bin VERSION 0.0.3)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_FLAGS "-Werror -Wall -O2")
+project(xtext VERSION 0.0.4)
 
-set(LIBBIN_INSTALL_LIB TRUE)
+set(CMAKE_C_STANDARD 17)
+unset(CMAKE_C_FLAGS)
+set(LIBXTEXT_INSTALL_LIB True)
 
-set(LIBBIN_SRC
-    src/binfront.c
-    src/elfobject.c
+set(LIBXTEXT_SRC
+    src/text_front.c
+    src/text_obj.c
 )
 
-add_library(${PROJECT_NAME} SHARED ${LIBBIN_SRC})
+add_library(xtext SHARED)
+target_sources(xtext PRIVATE ${LIBXTEXT_SRC})
 
-target_include_directories(${PROJECT_NAME} PRIVATE include)
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+target_compile_options(xtext PRIVATE -O2;-Wall)
 
-if(${LIBBIN_INSTALL_LIB})
-if (UNIX)
+target_include_directories(xtext PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(xtext PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+set_target_properties(xtext PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(xtext PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+
+if (${LIBXTEXT_INSTALL_LIB} AND UNIX)
     include(GNUInstallDirs)
 
-    install(TARGETS ${PROJECT_NAME}
+    install(TARGETS xtext
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/bin
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/xtext
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*h"
     )
-    configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
-    install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc
+    configure_file(input_configuration.pc.in input_configuration.pc @ONLY)
+    install(FILES ${CMAKE_BINARY_DIR}/input_configuration.pc
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
 endif()
